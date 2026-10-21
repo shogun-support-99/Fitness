@@ -68,6 +68,11 @@ function render(navigation = router.current) {
   syncNav(navigation.route);
   restoreFocus(focusKey);
   syncElapsedClock();
+
+  // Replacing the outlet rebuilds the sheet markup, which would silently close
+  // an open exercise detail — for instance when the catalogue finishes loading
+  // while the user is reading one. Repaint it from state instead.
+  if (detailState.exercise) renderDetail();
 }
 
 function syncNav(route) {

@@ -15,7 +15,6 @@ import {
   clearStepsCache,
   hasInstructions,
   loadCatalogue,
-  loadSteps,
   mergeCatalogues,
   normaliseName,
   rawDatasetId,
