@@ -42,6 +42,39 @@ jobs:
       - name: Verify local asset links resolve
         run: node scripts/check-links.mjs
 
+      # The upstream dataset's MIT grant covers its data and instruction text
+      # only; its images/ and videos/ are (c) Gym Visual and explicitly NOT
+      # licensed by cloning. This guard fails the build if any media reference
+      # or binary asset ever reaches the deployed tree. See NOTICE.
+      - name: Assert no third-party media is shipped
+        run: |
+          set -euo pipefail
+          fail=0
+
+          echo "-- scanning generated catalogue data --"
+          if grep -rioE 'gif_url|media_id|gymvisual|\.(gif|jpe?g|png|webp|mp4|webm)"' app/data/exercises-index.json app/data/steps.*.json; then
+            echo "::error::media reference found in generated catalogue data"
+            fail=1
+          else
+            echo "   clean: no media references in index or step packs"
+          fi
+
+          echo "-- asserting no binary media is committed anywhere --"
+          if git ls-files | grep -iE '\.(gif|jpe?g|png|webp|mp4|webm|mov)$' | grep -viE '^(assets/img/|app/icons/)' ; then
+            echo "::error::unexpected binary media committed outside the app's own artwork"
+            fail=1
+          else
+            echo "   clean: only IronLog's own SVG artwork is committed"
+          fi
+
+          echo "-- asserting attribution is present --"
+          test -f NOTICE || { echo "::error::NOTICE file missing"; fail=1; }
+          grep -q 'hasaneyldrm/exercises-dataset' NOTICE || { echo "::error::NOTICE missing upstream credit"; fail=1; }
+          grep -q 'Gym Visual' NOTICE || { echo "::error::NOTICE missing media exclusion"; fail=1; }
+          grep -q 'Hasan Emir' app/data/catalogue-meta.json || { echo "::error::generated metadata lost the MIT copyright notice"; fail=1; }
+
+          exit $fail
+
   deploy:
     name: Deploy to GitHub Pages
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'

@@ -2241,3 +2241,294 @@ textarea {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ── Library: clickable rows, catalogue pills, result cap ───────────────── */
+
+.library-open {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.library-open:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.library-main {
+  flex: 1 1 auto;
+}
+
+.library-name {
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.library-go {
+  display: inline-flex;
+  flex: 0 0 auto;
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.library-go .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.pill {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.6rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.pill-custom {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 42%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.pill-data {
+  color: var(--muted);
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.library-meta .target,
+.library-meta .secondary {
+  opacity: 0.78;
+  text-transform: capitalize;
+}
+
+.result-note,
+.picker-note {
+  margin: 0 0 10px;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.picker-note {
+  padding: 8px 4px 0;
+  text-align: center;
+}
+
+.chip-static {
+  cursor: default;
+  opacity: 0.9;
+}
+
+/* ── Exercise detail sheet ─────────────────────────────────────────────── */
+
+.detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 4px 18px 20px;
+  overflow-y: auto;
+}
+
+.detail-taxonomy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.tag {
+  font-size: 0.7rem;
+  color: var(--muted);
+  padding: 3px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: var(--surface);
+  text-transform: capitalize;
+}
+
+.detail-secondary h4,
+.detail-instructions h4 {
+  margin: 0 0 8px;
+  font-size: 0.7rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.detail-note {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.detail-note .icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+.detail-instructions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.detail-instructions-head h4 {
+  margin: 0;
+}
+
+.lang-select select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.steps li {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.steps li::marker {
+  color: var(--accent);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.steps-loading,
+.steps-empty,
+.steps-fallback {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.steps-fallback {
+  margin-bottom: 8px;
+  color: color-mix(in srgb, var(--accent) 70%, var(--text));
+}
+
+.spinner {
+  width: 13px;
+  height: 13px;
+  flex: 0 0 auto;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 2.4s;
+  }
+}
+
+.detail-attribution {
+  margin: 4px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 0.7rem;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.detail-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ── Settings: catalogue facts and attribution ─────────────────────────── */
+
+.fact-list {
+  margin: 0 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fact-list > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.82rem;
+}
+
+.fact-list dt {
+  color: var(--muted);
+}
+
+.fact-list dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
+
+.panel-hint.attribution {
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.panel-hint.attribution a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.panel-hint.attribution em {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Neck and other join the muscle badge set with the catalogue. */
+.badge-neck,
+.badge-other {
+  background: var(--surface);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}

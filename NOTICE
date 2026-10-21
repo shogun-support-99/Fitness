@@ -1,0 +1,59 @@
+# Third-party notices
+
+IronLog redistributes third-party **data**. It redistributes no third-party
+**media**.
+
+## Exercise catalogue data — MIT
+
+Portions of this software include exercise names, taxonomy (category, body
+part, equipment, target, muscle group, secondary muscles) and step-by-step
+instruction text with translations, derived from:
+
+    Repository : https://github.com/hasaneyldrm/exercises-dataset
+    Licence    : MIT
+    Copyright  : Copyright (c) 2026 Hasan Emir Yıldırım
+
+Used in accordance with that licence, which requires the copyright notice and
+permission notice to be retained in all copies or substantial portions of the
+software. This file is that retention, and the notice is additionally surfaced
+to users in the app at **Settings → Exercise catalogue** and at the foot of
+every catalogue exercise's detail sheet.
+
+The derived artefacts live in `app/data/` and are produced by
+`scripts/build-exercise-data.mjs`. Their exact provenance — upstream commit,
+record counts, languages and the number of media fields stripped — is recorded
+in `app/data/catalogue-meta.json`.
+
+## Exercise media — deliberately NOT redistributed
+
+The upstream repository also contains `images/` and `videos/`. Per that
+repository's own `LICENSE` (MEDIA EXCEPTION) and `NOTICE.md`, that media is:
+
+    Copyright : © Gym Visual — https://gymvisual.com/
+    Licence   : NOT covered by the MIT grant above
+
+The upstream project states that cloning its repository grants no licence to
+the media and that you must obtain your own licence directly from Gym Visual.
+
+Accordingly, IronLog ships **none** of it. `scripts/build-exercise-data.mjs`
+strips the `image`, `gif_url`, `media_id` and `attribution` fields from every
+record, and fails closed if any media reference appears in its output. The unit
+test `tests/catalogue.test.js` re-asserts this against the committed artefacts,
+so a future regeneration cannot silently reintroduce media.
+
+No exercise in IronLog displays an image, GIF or video. Exercises are presented
+as text plus taxonomy.
+
+## Agent skills used during development — not redistributed
+
+Two AI agent skill packs were installed in the maintainer's local agent
+environment while building this project. They are development-time guidance
+only, are not dependencies of the app, are not vendored into this repository,
+and have no effect on the licence of the app:
+
+    impeccable            — https://github.com/pbakaus/impeccable   (Apache-2.0)
+    design-taste-frontend — https://github.com/Leonxlnx/taste-skill (MIT, © 2026 Leonxlnx)
+
+## Everything else
+
+The IronLog application itself is MIT licensed — see `LICENSE`.

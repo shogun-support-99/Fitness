@@ -8,6 +8,9 @@
 import { compactNumber, estimatedOneRepMax } from "../stats.js";
 import { emptyState, esc, icon } from "../ui.js";
 
+/** Rows built in the add-exercise sheet before search takes over. */
+export const PICKER_CAP = 80;
+
 export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
   const workout = store.activeWorkout();
   const index = store.exerciseIndex();
@@ -173,6 +176,9 @@ function renderSetRow(entry, set, index, previous, units) {
 function renderPicker(store) {
   const exercises = store.exercises();
   const muscles = [...new Set(exercises.map((e) => e.muscle))].sort();
+  // The catalogue holds ~1,400 entries; render a capped, ranked slice and let
+  // search narrow it rather than building every row up front.
+  const shown = exercises.slice(0, PICKER_CAP);
   return `
     <div class="sheet" id="exercise-picker" hidden>
       <div class="sheet-backdrop" data-action="close-picker"></div>
@@ -190,8 +196,9 @@ function renderPicker(store) {
           ${muscles.map((m) => `<button class="chip" data-muscle="${esc(m)}">${esc(m)}</button>`).join("")}
         </div>
         <ul class="picker-list" id="picker-list">
-          ${exercises.map((e) => renderPickerRow(e, store.settings.units)).join("")}
+          ${shown.map((e) => renderPickerRow(e)).join("")}
         </ul>
+        <p class="picker-note" id="picker-note">${pickerNote(exercises.length, shown.length)}</p>
         <footer class="sheet-foot">
           <button class="btn btn-outline btn-wide" data-action="open-custom-exercise">${icon("plus")} Create custom exercise</button>
         </footer>
@@ -199,12 +206,21 @@ function renderPicker(store) {
     </div>`;
 }
 
-function renderPickerRow(exercise, units) {
+function pickerNote(total, shown) {
+  if (shown >= total) return "";
+  return `Showing ${shown} of ${total} — search to find a specific exercise.`;
+}
+
+function renderPickerRow(exercise) {
+  const secondary = exercise.secondaryMuscles?.length ? exercise.secondaryMuscles.slice(0, 2).join(", ") : "";
   return `
-    <li class="picker-row" data-name="${esc(exercise.name.toLowerCase())}" data-muscle="${esc(exercise.muscle)}" data-equipment="${esc(exercise.equipment)}">
+    <li class="picker-row" data-name="${esc(exercise.name.toLowerCase())}" data-muscle="${esc(exercise.muscle)}" data-equipment="${esc(exercise.equipment)}" data-target="${esc(exercise.target ?? "")}">
       <button data-action="pick-exercise" data-exercise="${esc(exercise.id)}">
-        <span class="picker-name">${esc(exercise.name)}${exercise.custom ? `<em class="pill pill-custom">custom</em>` : ""}</span>
-        <span class="picker-meta">${esc(exercise.muscle)} · ${esc(exercise.equipment)}</span>
+        <span class="picker-name">
+          ${esc(exercise.name)}
+          ${exercise.custom ? `<em class="pill pill-custom">custom</em>` : ""}
+        </span>
+        <span class="picker-meta">${esc(exercise.muscle)} · ${esc(exercise.equipment)}${secondary ? ` · +${esc(secondary)}` : ""}</span>
       </button>
     </li>`;
 }
