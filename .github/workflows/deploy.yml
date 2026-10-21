@@ -56,8 +56,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # enablement lets this job switch the repository to "Source: GitHub
+      # Actions" on first run, using the pages: write permission above.
       - name: Set up Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
