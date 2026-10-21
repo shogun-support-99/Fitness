@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output (this project has no build step; kept for tooling safety)
+dist/
+build/
+out/
+
+# Test and coverage artifacts
+coverage/
+test-results.xml
+.nyc_output/
+
+# Editors and OS noise
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local environment
+.env
+.env.local

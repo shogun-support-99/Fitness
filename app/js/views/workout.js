@@ -1,0 +1,220 @@
+/**
+ * IronLog — Workout logger view.
+ *
+ * The core screen: exercises, set rows with weight/reps, completion ticks,
+ * rest-timer controls, and finish/discard actions.
+ */
+
+import { compactNumber, estimatedOneRepMax } from "../stats.js";
+import { emptyState, esc, icon } from "../ui.js";
+
+export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
+  const workout = store.activeWorkout();
+  const index = store.exerciseIndex();
+  const units = store.settings.units;
+
+  if (!workout) {
+    return `
+      <section class="view view-workout">
+        <header class="view-head">
+          <div><p class="eyebrow">Logger</p><h1>No active workout</h1></div>
+        </header>
+        ${emptyState({
+          icon: "dumbbell",
+          title: "Nothing in progress",
+          body: "Start a session from the home screen to begin logging sets.",
+          action: `<button class="btn btn-primary" data-action="start-workout">${icon("bolt")} Start workout</button>`,
+        })}
+      </section>`;
+  }
+
+  const doneSets = workout.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
+  const volume = workout.exercises.reduce(
+    (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
+    0,
+  );
+
+  return `
+    <section class="view view-workout">
+      <header class="logger-head">
+        <div class="logger-title">
+          <span class="pill pill-live"><span class="dot"></span>Live</span>
+          <input class="logger-name" value="${esc(workout.name)}" data-action="rename-workout"
+                 aria-label="Workout name" maxlength="60" />
+        </div>
+        <div class="logger-clock">
+          <strong data-role="elapsed">${esc(elapsed)}</strong>
+          <span>${doneSets} sets · ${compactNumber(volume)} ${esc(units)}</span>
+        </div>
+      </header>
+
+      ${timer?.running ? renderTimerBar(timer) : ""}
+
+      <div class="exercise-stack">
+        ${workout.exercises.length === 0
+          ? emptyState({
+              icon: "plus",
+              title: "Add your first exercise",
+              body: "Pick from the built-in library or create your own.",
+              action: `<button class="btn btn-primary" data-action="open-picker">${icon("plus")} Add exercise</button>`,
+            })
+          : workout.exercises.map((entry) => renderExerciseCard(entry, index, store, units)).join("")}
+      </div>
+
+      ${workout.exercises.length > 0
+        ? `<button class="btn btn-outline btn-wide" data-action="open-picker">${icon("plus")} Add exercise</button>`
+        : ""}
+
+      <div class="logger-actions">
+        <button class="btn btn-danger-ghost" data-action="discard-workout">${icon("trash")} Discard</button>
+        <button class="btn btn-primary btn-lg" data-action="complete-workout" ${doneSets === 0 ? "disabled" : ""}>
+          ${icon("check")} Finish workout
+        </button>
+      </div>
+    </section>
+
+    ${renderPicker(store)}
+    ${renderSummaryModal()}`;
+}
+
+function renderTimerBar(timer) {
+  const left = timer.secondsLeft;
+  const mm = String(Math.floor(left / 60)).padStart(2, "0");
+  const ss = String(left % 60).padStart(2, "0");
+  const pct = Math.round((timer.progress ?? 0) * 100);
+  return `
+    <div class="timer-bar" role="timer" aria-live="polite">
+      <span class="timer-icon">${icon("timer")}</span>
+      <span class="timer-track"><span class="timer-fill" style="width:${pct}%"></span></span>
+      <span class="timer-read" data-role="timer-read">${mm}:${ss}</span>
+      <button class="timer-btn" data-action="timer-add" data-seconds="15" aria-label="Add 15 seconds">+15s</button>
+      <button class="timer-btn" data-action="timer-stop" aria-label="Stop rest timer">${icon("stop")}</button>
+    </div>`;
+}
+
+function renderExerciseCard(entry, index, store, units) {
+  const exercise = index[entry.exerciseId];
+  const name = exercise?.name ?? entry.exerciseId;
+  const previous = store.previousPerformance(entry.exerciseId);
+
+  return `
+    <article class="exercise-card" data-entry="${esc(entry.id)}">
+      <header class="exercise-head">
+        <div>
+          <h3>${esc(name)}</h3>
+          <p class="exercise-sub">
+            ${exercise ? `${esc(exercise.muscle)} · ${esc(exercise.equipment)}` : "Unknown exercise"}
+            ${previous ? `<span class="last-perf">Last: ${previous.weight} ${esc(units)} × ${previous.reps}</span>` : ""}
+          </p>
+        </div>
+        <button class="icon-btn" data-action="remove-exercise" data-entry="${esc(entry.id)}" aria-label="Remove ${esc(name)}">
+          ${icon("trash")}
+        </button>
+      </header>
+
+      <div class="set-table" role="table" aria-label="${esc(name)} sets">
+        <div class="set-row set-head" role="row">
+          <span role="columnheader">Set</span>
+          <span role="columnheader">Previous</span>
+          <span role="columnheader">${esc(units)}</span>
+          <span role="columnheader">Reps</span>
+          <span role="columnheader">1RM</span>
+          <span role="columnheader"><span class="sr-only">Done</span></span>
+        </div>
+
+        ${entry.sets.map((set, i) => renderSetRow(entry, set, i, previous, units)).join("")}
+      </div>
+
+      <div class="exercise-foot">
+        <button class="btn btn-small btn-outline" data-action="add-set" data-entry="${esc(entry.id)}" data-previous="true">
+          ${icon("plus")} Add set
+        </button>
+        <button class="btn btn-small btn-ghost" data-action="rest-now" aria-label="Start rest timer">
+          ${icon("timer")} Rest
+        </button>
+      </div>
+    </article>`;
+}
+
+function renderSetRow(entry, set, index, previous, units) {
+  const oneRm = set.weight > 0 && set.reps > 0 ? estimatedOneRepMax(set.weight, set.reps) : 0;
+  const eid = esc(entry.id);
+  const sid = esc(set.id);
+  return `
+    <div class="set-row ${set.done ? "is-done" : ""}" role="row" data-set="${sid}">
+      <span class="set-number" role="cell">${index + 1}</span>
+      <span class="set-previous" role="cell">${previous ? `${previous.weight}×${previous.reps}` : "—"}</span>
+      <span role="cell">
+        <input class="set-input" type="number" inputmode="decimal" min="0" step="0.5"
+               value="${set.weight}" placeholder="0"
+               data-action="set-weight" data-entry="${eid}" data-set="${sid}"
+               aria-label="Set ${index + 1} weight" />
+      </span>
+      <span role="cell">
+        <input class="set-input" type="number" inputmode="numeric" min="0" step="1"
+               value="${set.reps}" placeholder="0"
+               data-action="set-reps" data-entry="${eid}" data-set="${sid}"
+               aria-label="Set ${index + 1} reps" />
+      </span>
+      <span class="set-onerm" role="cell">${oneRm > 0 ? compactNumber(oneRm) : "—"}</span>
+      <span role="cell">
+        <button class="tick ${set.done ? "is-on" : ""}" role="checkbox" aria-checked="${set.done}"
+                data-action="toggle-set" data-entry="${eid}" data-set="${sid}"
+                aria-label="Mark set ${index + 1} ${set.done ? "not done" : "done"}">
+          ${icon("check")}
+        </button>
+      </span>
+      <button class="set-delete" data-action="remove-set" data-entry="${eid}" data-set="${sid}" aria-label="Delete set ${index + 1}">
+        ${icon("trash")}
+      </button>
+    </div>`;
+}
+
+function renderPicker(store) {
+  const exercises = store.exercises();
+  const muscles = [...new Set(exercises.map((e) => e.muscle))].sort();
+  return `
+    <div class="sheet" id="exercise-picker" hidden>
+      <div class="sheet-backdrop" data-action="close-picker"></div>
+      <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Choose an exercise">
+        <header class="sheet-head">
+          <h2>Add exercise</h2>
+          <button class="icon-btn" data-action="close-picker" aria-label="Close">${icon("back")}</button>
+        </header>
+        <div class="sheet-search">
+          ${icon("search")}
+          <input type="search" id="picker-search" placeholder="Search ${exercises.length} exercises…" autocomplete="off" />
+        </div>
+        <div class="chip-row chip-scroll" id="picker-muscles">
+          <button class="chip is-active" data-muscle="all">All</button>
+          ${muscles.map((m) => `<button class="chip" data-muscle="${esc(m)}">${esc(m)}</button>`).join("")}
+        </div>
+        <ul class="picker-list" id="picker-list">
+          ${exercises.map((e) => renderPickerRow(e, store.settings.units)).join("")}
+        </ul>
+        <footer class="sheet-foot">
+          <button class="btn btn-outline btn-wide" data-action="open-custom-exercise">${icon("plus")} Create custom exercise</button>
+        </footer>
+      </div>
+    </div>`;
+}
+
+function renderPickerRow(exercise, units) {
+  return `
+    <li class="picker-row" data-name="${esc(exercise.name.toLowerCase())}" data-muscle="${esc(exercise.muscle)}" data-equipment="${esc(exercise.equipment)}">
+      <button data-action="pick-exercise" data-exercise="${esc(exercise.id)}">
+        <span class="picker-name">${esc(exercise.name)}${exercise.custom ? `<em class="pill pill-custom">custom</em>` : ""}</span>
+        <span class="picker-meta">${esc(exercise.muscle)} · ${esc(exercise.equipment)}</span>
+      </button>
+    </li>`;
+}
+
+function renderSummaryModal() {
+  return `
+    <div class="sheet" id="summary-modal" hidden>
+      <div class="sheet-backdrop"></div>
+      <div class="sheet-panel sheet-panel-sm" role="dialog" aria-modal="true" aria-label="Workout summary">
+        <div id="summary-content"></div>
+      </div>
+    </div>`;
+}

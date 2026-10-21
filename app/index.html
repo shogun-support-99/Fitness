@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>IronLog — Strength training log</title>
+    <meta
+      name="description"
+      content="IronLog is an offline-first strength training log. Track exercises, sets, volume, rest and personal records. No account, no server, no tracking."
+    />
+    <meta name="theme-color" content="#0a0c0f" />
+    <link rel="canonical" href="./" />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" href="../assets/img/logo.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="../assets/img/logo.svg" />
+    <link rel="stylesheet" href="./css/app.css" />
+    <script type="module" src="./js/main.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#view-outlet">Skip to content</a>
+
+    <div class="shell">
+      <aside class="sidebar" aria-label="Primary">
+        <a class="brand" href="#/home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+              <path d="M6 12v8M10 8v16M22 8v16M26 12v8M10 16h12" />
+            </svg>
+          </span>
+          <span class="brand-name">IronLog</span>
+        </a>
+
+        <nav class="nav">
+          <a class="nav-item" data-route="home" href="#/home"><span class="nav-icon"></span>Home</a>
+          <a class="nav-item" data-route="workout" href="#/workout"><span class="nav-icon"></span>Logger</a>
+          <a class="nav-item" data-route="history" href="#/history"><span class="nav-icon"></span>History</a>
+          <a class="nav-item" data-route="stats" href="#/stats"><span class="nav-icon"></span>Progress</a>
+          <a class="nav-item" data-route="library" href="#/library"><span class="nav-icon"></span>Library</a>
+          <a class="nav-item" data-route="settings" href="#/settings"><span class="nav-icon"></span>Settings</a>
+        </nav>
+
+        <div class="sidebar-foot">
+          <a class="link-muted" href="../">← Landing page</a>
+          <p class="storage-note">Stored locally in this browser</p>
+        </div>
+      </aside>
+
+      <main class="main" id="view-outlet" tabindex="-1"></main>
+
+      <nav class="tabbar" aria-label="Primary mobile">
+        <a class="nav-item" data-route="home" href="#/home">Home</a>
+        <a class="nav-item" data-route="workout" href="#/workout">Log</a>
+        <a class="nav-item" data-route="history" href="#/history">History</a>
+        <a class="nav-item" data-route="stats" href="#/stats">Progress</a>
+        <a class="nav-item" data-route="library" href="#/library">Library</a>
+      </nav>
+    </div>
+
+    <div id="toast-host" aria-live="polite"></div>
+  </body>
+</html>

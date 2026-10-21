@@ -1,0 +1,20 @@
+{
+  "name": "IronLog — Strength training log",
+  "short_name": "IronLog",
+  "description": "Offline-first strength training log: exercises, sets, volume, rest timing and personal records.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0c0f",
+  "theme_color": "#0a0c0f",
+  "categories": ["health", "fitness", "sports"],
+  "icons": [
+    {
+      "src": "../assets/img/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
