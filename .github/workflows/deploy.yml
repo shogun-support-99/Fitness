@@ -32,7 +32,7 @@ jobs:
       - name: Verify every module parses
         run: |
           fail=0
-          for f in $(find app assets -name '*.js' -not -path '*/node_modules/*'); do
+          for f in $(find app assets scripts -name '*.js'); do
             if ! node --check "$f" 2>/tmp/err; then
               echo "SYNTAX ERROR in $f"; cat /tmp/err; fail=1
             fi
@@ -56,12 +56,41 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # enablement lets this job switch the repository to "Source: GitHub
-      # Actions" on first run, using the pages: write permission above.
+      # GitHub Pages must be enabled once, by a human, in the repository UI:
+      # the REST endpoint that creates a Pages site rejects both user tokens and
+      # the workflow token with "Resource not accessible by integration" on this
+      # account. This step tries anyway, and if it cannot, it stops with a
+      # precise instruction rather than letting configure-pages fail opaquely.
+      - name: Ensure GitHub Pages is enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          api="https://api.github.com/repos/$REPO/pages"
+          auth=(-H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json")
+
+          code=$(curl -s -o /tmp/pages.json -w '%{http_code}' "${auth[@]}" "$api")
+          if [ "$code" = "200" ]; then
+            echo "GitHub Pages is already enabled."
+            grep -o '"html_url":"[^"]*"' /tmp/pages.json | head -1 || true
+            exit 0
+          fi
+
+          echo "Pages is not enabled yet (GET returned HTTP $code). Attempting to enable it..."
+          code=$(curl -s -o /tmp/enable.json -w '%{http_code}' -X POST "${auth[@]}" \
+                 -d '{"build_type":"workflow"}' "$api")
+          if [ "$code" = "201" ]; then
+            echo "GitHub Pages enabled with Source: GitHub Actions."
+            exit 0
+          fi
+
+          echo "Automatic enablement returned HTTP $code:"
+          cat /tmp/enable.json 2>/dev/null | head -c 500; echo
+          echo "::error title=One-time manual step required::GitHub Pages is not enabled on this repository, and the API refuses to enable it automatically. Open https://github.com/$REPO/settings/pages and set 'Build and deployment' -> Source to 'GitHub Actions'. Then re-run this workflow from the Actions tab; every later push to main will deploy on its own."
+          exit 1
+
       - name: Set up Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
