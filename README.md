@@ -47,8 +47,15 @@ lives in your browser's local storage, and you can export all of it as JSON at a
   reps, and highest estimated 1RM. The session summary names exactly which you broke.
 - **Progress views** — weekly volume bars, muscle-group balance, lifetime totals, and a
   training-day streak. Charts are inline SVG, so no charting library loads.
-- **Exercise library** — around 90 common movements grouped by muscle and equipment,
-  searchable as you type, plus custom exercises that persist.
+- **Exercise library** — **1,388 exercises**: around 90 curated staples plus a 1,316-entry
+  open catalogue, searchable as you type with relevance ranking, grouped by muscle and
+  equipment. Custom exercises persist alongside them.
+- **Step-by-step instructions in 10 languages** — every catalogue exercise carries numbered
+  form cues in English, Spanish, French, Italian, Polish, Russian, Turkish, Chinese, Hindi
+  and Korean. Switch language in Settings; each pack downloads only when you first open an
+  exercise in it.
+- **Exercise detail** — target muscle, secondary muscles, body part and equipment, plus the
+  instructions above, in a sheet that opens from anywhere in the library.
 - **Session templates** — repeat your last workout with its sets and weights prefilled,
   or start from a Push / Pull / Legs split.
 - **Export, import, erase** — your whole history is one JSON document.
@@ -90,9 +97,9 @@ node --test "tests/*.test.js"
 ```
 
 ```
-# tests 170
-# suites 43
-# pass 170
+# tests 228
+# suites 54
+# pass 228
 # fail 0
 ```
 
@@ -114,19 +121,77 @@ failure, and timer completion semantics.
 │   ├── index.html             # App shell: sidebar, tab bar, outlet
 │   ├── manifest.json          # PWA manifest
 │   ├── css/app.css            # App design system
+│   ├── data/                  # Generated exercise catalogue (see below)
+│   │   ├── exercises-index.json   # 313 KB metadata for 1,316 exercises
+│   │   ├── steps.<lang>.json      # instructions per language, lazy-loaded
+│   │   └── catalogue-meta.json    # provenance, counts, licensing record
 │   └── js/
 │       ├── main.js            # Bootstrap, render loop, event delegation
 │       ├── store.js           # Persistence (injected storage)
 │       ├── stats.js           # Pure training maths
 │       ├── timer.js           # Rest timer (injected clock)
-│       ├── exercises.js       # Built-in exercise library
+│       ├── exercises.js       # Curated starter library + search ranking
+│       ├── catalogue.js       # External catalogue: fetch, merge, instructions
 │       ├── router.js          # Hash router
 │       ├── ui.js              # Escaping, icons, chart primitives
 │       └── views/             # home, workout, history, stats, library, settings
-├── scripts/check-links.mjs    # CI check: every local link resolves
+├── scripts/
+│   ├── build-exercise-data.mjs    # Regenerates app/data/ from the upstream dataset
+│   ├── check-links.mjs            # CI check: every local link resolves
+│   └── setup-github.sh            # One-shot repo/profile makeover
+├── NOTICE                     # Third-party attribution and media exclusion
 ├── tests/                     # Node test-runner suites
 └── .github/workflows/deploy.yml
 ```
+
+## Exercise catalogue
+
+The library combines two sources:
+
+| Source | Count | Ships as |
+| --- | --- | --- |
+| Curated starter library | 90 | inline in `app/js/exercises.js` |
+| [hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset) | 1,316 | generated JSON in `app/data/` |
+| **Merged** | **1,388** | 18 name collisions resolved in favour of the curated entry |
+
+The catalogue is fetched after first paint rather than imported, so the 313 KB index never
+blocks the app, and a failed fetch leaves the curated library fully working. Instruction
+text is split into one file per language and loaded only when you open an exercise in that
+language — a monolingual user downloads about 600 KB, not all ten packs. When a curated
+staple collides with a catalogue entry, it keeps its own stable id (so saved workouts still
+resolve) but is linked to the catalogue record's instructions via `stepsId`.
+
+### Regenerating
+
+```bash
+git clone https://github.com/hasaneyldrm/exercises-dataset.git
+node scripts/build-exercise-data.mjs                       # or --source /path/to/dataset
+```
+
+The generator maps the upstream taxonomy onto IronLog's muscle groups, dedupes by
+normalised name, writes the index plus one pack per language, and records the upstream
+commit in `catalogue-meta.json`.
+
+### Licensing — data yes, media no
+
+The upstream repository is dual-licensed, and this project takes that seriously:
+
+- **Data — MIT, © 2026 Hasan Emir Yıldırım.** Exercise names, taxonomy and instruction
+  text with translations. Used under that licence, with the copyright notice retained in
+  `NOTICE`, in `app/data/catalogue-meta.json`, and surfaced to users in Settings and on
+  every catalogue exercise.
+- **Media — © Gym Visual, NOT licensed.** The upstream `images/` and `videos/` are excluded
+  from its MIT grant; the upstream `LICENSE` states that cloning grants no media licence and
+  that you must obtain your own from Gym Visual.
+
+IronLog therefore ships **no** third-party media. The generator strips `image`, `gif_url`,
+`media_id` and `attribution` from every record and fails closed if any media reference
+appears in its output. Two independent guards keep it that way: the
+`tests/catalogue.test.js` licensing suite, and a CI step that scans the committed tree for
+media references and binary assets before deploy. No exercise displays an image, GIF or
+video — they are presented as text plus taxonomy.
+
+See [`NOTICE`](./NOTICE) for the full third-party notice.
 
 ## Architecture notes
 
@@ -173,6 +238,13 @@ if your history matters to you.
 ## License
 
 MIT — see [LICENSE](./LICENSE).
+
+The exercise catalogue data and instruction text come from
+[hasaneyldrm/exercises-dataset](https://github.com/hasaneyldrm/exercises-dataset), also MIT
+licensed (© 2026 Hasan Emir Yıldırım), and are attributed in [`NOTICE`](./NOTICE) and in the
+app itself. That project's exercise media is © Gym Visual and is **not** covered by its MIT
+grant, so none of it is redistributed here — see
+[Exercise catalogue](#licensing--data-yes-media-no).
 
 This is an independent project. It is not affiliated with, endorsed by, or derived from
 any other fitness product.

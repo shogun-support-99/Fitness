@@ -7,6 +7,7 @@
  */
 
 import { EXERCISE_INDEX, allExercises, makeExerciseId } from "./exercises.js";
+import { loadCatalogue } from "./catalogue.js";
 import {
   estimatedOneRepMax,
   localDateKey,
@@ -41,6 +42,7 @@ function emptyDocument() {
       restSeconds: 120,
       autoStartRestTimer: true,
       theme: "dark",
+      instructionLanguage: "en",
     },
     createdAt: new Date().toISOString(),
   };
@@ -58,6 +60,55 @@ export class Store {
         : memoryStorage());
     this.doc = this.#read();
     this.listeners = new Set();
+
+    /**
+     * External catalogue state. Empty until loadCatalogue() resolves, so every
+     * code path that reads exercises() works against the curated starter
+     * library alone if the fetch never completes.
+     */
+    this.catalogue = [];
+    this.catalogueMeta = null;
+    this.catalogueState = "idle";
+    this.catalogueBase = "";
+  }
+
+  /**
+   * Fetch and merge the external exercise catalogue.
+   *
+   * Resolves to true when the catalogue became available. Never throws: a
+   * missing or malformed payload leaves the curated library in place and sets
+   * catalogueState to "unavailable" so the UI can say so honestly.
+   *
+   * @param {string} [base] directory holding app/data, relative to the page
+   */
+  async loadCatalogue(base = "") {
+    if (this.catalogueState === "loading") return false;
+    this.catalogueState = "loading";
+    this.catalogueBase = base;
+    this.#emit({ type: "catalogue:loading", persisted: true });
+
+    const result = await loadCatalogue(base);
+    if (!result.available) {
+      this.catalogueState = "unavailable";
+      this.#emit({ type: "catalogue:unavailable", persisted: true });
+      return false;
+    }
+
+    this.catalogue = result.exercises;
+    this.catalogueMeta = result.meta;
+    this.catalogueState = "ready";
+    this.#emit({
+      type: "catalogue:ready",
+      persisted: true,
+      count: result.exercises.length,
+      collisions: this.catalogueCollisions,
+    });
+    return true;
+  }
+
+  /** True once the full catalogue is merged in. */
+  get catalogueReady() {
+    return this.catalogueState === "ready";
   }
 
   #read() {
@@ -117,11 +168,24 @@ export class Store {
   // ── Exercises ─────────────────────────────────────────────────────────────
 
   exercises() {
-    return allExercises(this.doc.customExercises);
+    return allExercises(this.doc.customExercises, this.catalogue);
   }
 
   exerciseIndex() {
-    return Object.fromEntries(this.exercises().map((e) => [e.id, e]));
+    if (this._indexCache && this._indexCacheKey === this.#indexKey()) return this._indexCache;
+    const index = Object.fromEntries(this.exercises().map((e) => [e.id, e]));
+    this._indexCache = index;
+    this._indexCacheKey = this.#indexKey();
+    return index;
+  }
+
+  /**
+   * Rebuilding a ~1,400-entry index on every call is wasteful when the logger
+   * asks for it per render, so it is memoised against the inputs that can
+   * change it: catalogue state plus the custom-exercise count.
+   */
+  #indexKey() {
+    return `${this.catalogueState}:${this.catalogue.length}:${this.doc.customExercises.length}`;
   }
 
   getExercise(id) {

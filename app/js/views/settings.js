@@ -6,6 +6,7 @@
  */
 
 import { EQUIPMENT } from "../exercises.js";
+import { availableLanguages } from "../catalogue.js";
 import { esc, icon } from "../ui.js";
 
 const REST_PRESETS = [45, 60, 90, 120, 180, 240, 300];
@@ -78,6 +79,9 @@ export function renderSettings(store) {
         </div>
       </section>
 
+      ${renderLanguagePanel(store)}
+      ${renderCataloguePanel(store)}
+
       <section class="panel">
         <div class="panel-head"><h2>About</h2></div>
         <p class="panel-hint">
@@ -87,6 +91,73 @@ export function renderSettings(store) {
         </p>
         <a class="link" href="../" data-action="to-landing">Project landing page ${icon("chevron")}</a>
       </section>
+    </section>`;
+}
+
+/** Instruction language for catalogue exercises. */
+function renderLanguagePanel(store) {
+  const languages = availableLanguages(store.catalogueMeta);
+  const current = store.settings.instructionLanguage ?? "en";
+  if (languages.length <= 1) return "";
+
+  return `
+    <section class="panel">
+      <div class="panel-head"><h2>Instruction language</h2></div>
+      <div class="chip-row">
+        ${languages
+          .map(
+            (l) => `
+          <button class="chip ${current === l.code ? "is-active" : ""}"
+                  data-action="set-instruction-language" data-lang="${esc(l.code)}">
+            ${esc(l.flag)} ${esc(l.label)}
+          </button>`,
+          )
+          .join("")}
+      </div>
+      <p class="panel-hint">
+        Applies to the step-by-step instructions shown on catalogue exercises. Each
+        language pack is downloaded the first time you open an exercise in it, and
+        falls back to English when a translation is missing.
+      </p>
+    </section>`;
+}
+
+/** Provenance and licensing for the external catalogue. */
+function renderCataloguePanel(store) {
+  const meta = store.catalogueMeta;
+  const state = store.catalogueState;
+  const counts = meta?.counts ?? {};
+  const source = meta?.source ?? {};
+  const commit = source.commit ? String(source.commit).slice(0, 7) : null;
+
+  const stateLine =
+    state === "ready"
+      ? `${store.catalogue.length} catalogue exercises loaded`
+      : state === "loading"
+        ? "Catalogue is loading…"
+        : state === "unavailable"
+          ? "Catalogue unavailable — using the built-in starter library only. Check your connection and reload."
+          : "Catalogue not loaded yet.";
+
+  return `
+    <section class="panel">
+      <div class="panel-head"><h2>Exercise catalogue</h2></div>
+      <dl class="fact-list">
+        <div><dt>Status</dt><dd>${esc(stateLine)}</dd></div>
+        <div><dt>Languages</dt><dd>${counts.languages ?? availableLanguages(meta).length}</dd></div>
+        ${commit ? `<div><dt>Source commit</dt><dd>${esc(commit)}</dd></div>` : ""}
+      </dl>
+      <p class="panel-hint attribution">
+        Exercise names, taxonomy and step-by-step instruction text come from
+        <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener noreferrer" target="_blank">hasaneyldrm/exercises-dataset</a>,
+        used under the MIT licence — © 2026 Hasan Emir Yıldırım.
+      </p>
+      <p class="panel-hint attribution">
+        That repository's animation GIFs and thumbnail images are separately © Gym Visual
+        and are explicitly <em>not</em> covered by its MIT grant, so IronLog redistributes
+        none of them. The generator strips every media reference and fails if one appears
+        in its output.
+      </p>
     </section>`;
 }
 

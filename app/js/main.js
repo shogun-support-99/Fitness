@@ -10,20 +10,24 @@ import { Store } from "./store.js";
 import { RestTimer, formatElapsed, formatSeconds } from "./timer.js";
 import { Router, parseHash } from "./router.js";
 import { searchExercises } from "./exercises.js";
+import { hasInstructions, stepsFor } from "./catalogue.js";
 import { compactNumber, estimatedOneRepMax } from "./stats.js";
 import { esc, icon } from "./ui.js";
 
 import { renderHome } from "./views/home.js";
-import { renderWorkout } from "./views/workout.js";
+import { renderWorkout, PICKER_CAP } from "./views/workout.js";
 import { renderHistory } from "./views/history.js";
 import { renderStats } from "./views/stats.js";
-import { renderLibrary } from "./views/library.js";
+import { renderLibrary, renderExerciseDetail, RESULT_CAP } from "./views/library.js";
 import { renderSettings } from "./views/settings.js";
 
 const store = new Store();
 let elapsedTimer = null;
 let pickerState = { query: "", muscle: "all" };
 let libraryState = { query: "", muscle: "all" };
+
+/** The exercise whose detail sheet is open, plus its async instruction state. */
+let detailState = { exercise: null, stepsState: "idle", stepsResult: null };
 
 const restTimer = new RestTimer({
   onFinish: () => notify("Rest complete", "Time for your next set."),
@@ -341,8 +345,46 @@ const actions = {
   },
 
   // Custom exercises
+  "open-exercise": (el) => openExerciseDetail(el.dataset.id),
+  "close-exercise-detail": () => closeExerciseDetail(),
+
+  /** Works from both the settings chips and the detail-sheet select. */
+  "set-instruction-language": (el) => {
+    const lang = el.dataset.lang ?? el.value ?? "en";
+    store.updateSettings({ instructionLanguage: lang });
+    if (hasInstructions(detailState.exercise)) {
+      loadDetailSteps(detailState.exercise, lang);
+    }
+    render();
+  },
+
+  "add-current-to-workout": (el) => {
+    const active = store.activeWorkout();
+    if (!active) return;
+    const result = store.addExerciseToWorkout(active.id, el.dataset.id);
+    if (!result.ok) return toast(result.error, { tone: "danger" });
+    const previous = store.previousPerformance(el.dataset.id);
+    store.addSet(active.id, result.entry.id, previous ? previous : { weight: 0, reps: 0 });
+    closeExerciseDetail();
+    toast(`Added ${result.entry.name}`);
+    location.hash = "#/workout";
+    render();
+  },
+
+  "start-with-exercise": (el) => {
+    const exercise = store.exerciseIndex()[el.dataset.id];
+    const created = store.startWorkout(exercise ? exercise.name : undefined);
+    closeExerciseDetail();
+    const result = store.addExerciseToWorkout(created.workout.id, el.dataset.id);
+    if (result.ok) store.addSet(created.workout.id, result.entry.id, { weight: 0, reps: 0 });
+    toast("Workout started");
+    location.hash = "#/workout";
+    render();
+  },
+
   "open-custom-exercise": () => {
     closeSheet("exercise-picker");
+    closeExerciseDetail();
     openSheet("custom-exercise-sheet");
   },
   "close-custom-exercise": () => closeSheet("custom-exercise-sheet"),
@@ -544,21 +586,95 @@ function showSummary(workout, summary) {
 
 function filterPicker() {
   const list = $("#picker-list");
+  const note = $("#picker-note");
   if (!list) return;
+
   const results = searchExercises(store.exercises(), pickerState.query, pickerState.muscle);
-  list.innerHTML = results.length
-    ? results
-        .map(
-          (e) => `
-      <li class="picker-row" data-name="${esc(e.name.toLowerCase())}" data-muscle="${esc(e.muscle)}">
+  const shown = results.slice(0, PICKER_CAP);
+
+  list.innerHTML = shown.length
+    ? shown
+        .map((e) => {
+          const secondary = e.secondaryMuscles?.length ? e.secondaryMuscles.slice(0, 2).join(", ") : "";
+          return `
+      <li class="picker-row">
         <button data-action="pick-exercise" data-exercise="${esc(e.id)}">
           <span class="picker-name">${esc(e.name)}${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}</span>
-          <span class="picker-meta">${esc(e.muscle)} · ${esc(e.equipment)}</span>
+          <span class="picker-meta">${esc(e.muscle)} · ${esc(e.equipment)}${secondary ? ` · +${esc(secondary)}` : ""}</span>
         </button>
-      </li>`,
-        )
+      </li>`;
+        })
         .join("")
     : `<li class="picker-empty">No exercises match that search.</li>`;
+
+  if (note) {
+    note.textContent =
+      results.length === 0
+        ? ""
+        : results.length > shown.length
+          ? `Showing ${shown.length} of ${results.length} matches — refine your search.`
+          : "";
+  }
+}
+
+// ── Exercise detail sheet ───────────────────────────────────────────────────
+//
+// The sheet paints the taxonomy synchronously, then fills in the numbered
+// instructions once that language's pack resolves. Instructions live in
+// per-language files fetched on demand, so opening one exercise costs at most
+// one pack rather than shipping all ten.
+
+function renderDetail() {
+  const sheet = $("#exercise-detail-sheet");
+  const content = $("#exercise-detail-content");
+  if (!sheet || !content) return;
+
+  if (!detailState.exercise) return;
+  content.innerHTML = renderExerciseDetail(detailState.exercise, {
+    store,
+    stepsResult: detailState.stepsResult,
+    stepsState: detailState.stepsState,
+  });
+  // openSheet is idempotent: it unhides, adds .is-open for the transition and
+  // locks body scroll, matching every other sheet in the app.
+  openSheet("exercise-detail-sheet");
+}
+
+async function loadDetailSteps(exercise, lang) {
+  detailState.stepsState = "loading";
+  detailState.stepsResult = null;
+  renderDetail();
+
+  // Pass the exercise, not its id, so a curated entry linked to a catalogue
+  // record resolves through its stepsId.
+  const result = await stepsFor(exercise, lang, "");
+
+  // Drop stale responses: the user may have opened another exercise or changed
+  // language while the pack was in flight.
+  if (detailState.exercise?.id !== exercise.id) return;
+  if ((store.settings.instructionLanguage ?? "en") !== lang) return;
+
+  detailState.stepsResult = result;
+  detailState.stepsState = result.steps.length > 0 ? "ready" : "empty";
+  renderDetail();
+}
+
+function openExerciseDetail(id) {
+  const exercise = store.exerciseIndex()[id];
+  if (!exercise) return;
+  detailState = { exercise, stepsState: "idle", stepsResult: null };
+  renderDetail();
+  if (hasInstructions(exercise)) {
+    loadDetailSteps(exercise, store.settings.instructionLanguage ?? "en");
+  } else {
+    detailState.stepsState = "empty";
+    renderDetail();
+  }
+}
+
+function closeExerciseDetail() {
+  detailState = { exercise: null, stepsState: "idle", stepsResult: null };
+  closeSheet("exercise-detail-sheet");
 }
 
 function filterLibraryList() {
@@ -566,23 +682,54 @@ function filterLibraryList() {
   const emptyHost = $(".view-library");
   if (!list || !emptyHost) return render();
   const results = searchExercises(store.exercises(), libraryState.query, libraryState.muscle);
+  // Zero results changes the whole view (empty state plus a create affordance),
+  // so hand back to a full render rather than patching the list in place.
   if (results.length === 0) return render();
-  list.innerHTML = results
-    .map(
-      (e) => `
+  list.innerHTML = results.slice(0, RESULT_CAP).map(libraryRowHtml).join("");
+  updateResultNote(results.length);
+}
+
+/** Row markup shared with views/library.js so in-place filtering stays in sync. */
+function libraryRowHtml(e) {
+  const secondary = e.secondaryMuscles?.length ? e.secondaryMuscles.slice(0, 3).join(", ") : "";
+  return `
     <li class="library-row">
-      <div class="library-main">
-        <span class="library-name">${esc(e.name)}${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}</span>
-        <span class="library-meta">
-          <span class="badge badge-${esc(e.muscle)}">${esc(e.muscle)}</span>
-          <span class="equip">${esc(e.equipment)}</span>
-          ${e.note ? `<span class="note">${icon("info")} ${esc(e.note)}</span>` : ""}
+      <button class="library-open" data-action="open-exercise" data-id="${esc(e.id)}">
+        <span class="library-main">
+          <span class="library-name">
+            ${esc(e.name)}
+            ${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}
+            ${e.source === "dataset" ? `<em class="pill pill-data">catalogue</em>` : ""}
+          </span>
+          <span class="library-meta">
+            <span class="badge badge-${esc(e.muscle)}">${esc(e.muscle)}</span>
+            <span class="equip">${esc(e.equipment)}</span>
+            ${e.target ? `<span class="target">target: ${esc(e.target)}</span>` : ""}
+            ${secondary ? `<span class="secondary">+ ${esc(secondary)}</span>` : ""}
+            ${e.note ? `<span class="note">${icon("info")} ${esc(e.note)}</span>` : ""}
+          </span>
         </span>
-      </div>
+        <span class="library-go">${icon("chevron")}</span>
+      </button>
       ${e.custom ? `<button class="icon-btn" data-action="delete-custom" data-id="${esc(e.id)}" aria-label="Delete ${esc(e.name)}">${icon("trash")}</button>` : ""}
-    </li>`,
-    )
-    .join("");
+    </li>`;
+}
+
+function updateResultNote(total) {
+  const text =
+    total > RESULT_CAP
+      ? `Showing ${RESULT_CAP} of ${total} matches \u2014 refine your search to see the rest.`
+      : "";
+  const note = $(".result-note");
+  if (note) {
+    note.textContent = text;
+    note.hidden = !text;
+    return;
+  }
+  if (text) {
+    const list = $(".library-list");
+    if (list) list.insertAdjacentHTML("beforebegin", `<p class="result-note">${esc(text)}</p>`);
+  }
 }
 
 // ── Event wiring ───────────────────────────────────────────────────────────
@@ -663,6 +810,18 @@ store.subscribe((event) => {
   if (event.persisted === false && store.lastError) {
     toast("Could not save to this browser's storage", { tone: "danger", timeout: 4000 });
   }
+
+  // The catalogue arrives after first paint. Repaint only the surfaces whose
+  // content depends on it, so an in-progress set is never re-rendered out from
+  // under the user's cursor.
+  if (event.type === "catalogue:ready") {
+    const route = parseHash(location.hash).route;
+    if (route === "library") {
+      render();
+    } else if ($("#exercise-picker") && !$("#exercise-picker").hidden) {
+      filterPicker();
+    }
+  }
 });
 
 // ── Boot ───────────────────────────────────────────────────────────────────
@@ -670,6 +829,16 @@ store.subscribe((event) => {
 function boot() {
   if (!globalThis.location.hash) globalThis.location.hash = "#/home";
   router.start();
+
+  /**
+   * Kick off the external catalogue load without awaiting it. The app is fully
+   * usable from the curated starter library in the meantime; when the fetch
+   * resolves the subscriber above repaints the library or picker. Data files are
+   * resolved relative to this page (app/index.html -> app/data/).
+   */
+  store.loadCatalogue("").catch(() => {
+    /* loadCatalogue never rejects; belt and braces for the boot path. */
+  });
 
   // Restore a rest timer that was running when the page was reloaded.
   const active = store.activeWorkout();

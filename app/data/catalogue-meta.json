@@ -1,0 +1,103 @@
+{
+  "generatedAt": "2026-10-21T15:50:55.611Z",
+  "generator": "scripts/build-exercise-data.mjs",
+  "source": {
+    "repository": "https://github.com/hasaneyldrm/exercises-dataset",
+    "commit": "7455efae41b330c265e7cd4b78dfa848e7ce5ebd",
+    "localPath": "/home/user/exercises-dataset",
+    "recordsRead": 1324
+  },
+  "counts": {
+    "exercises": 1316,
+    "languages": 10,
+    "skippedDuplicateNames": 8,
+    "skippedMissingId": 0,
+    "mediaFieldsStripped": 5296
+  },
+  "languages": [
+    {
+      "code": "en",
+      "label": "English",
+      "flag": "🇬🇧",
+      "exercises": 1316,
+      "bytes": 636235
+    },
+    {
+      "code": "es",
+      "label": "Spanish",
+      "flag": "🇪🇸",
+      "exercises": 1316,
+      "bytes": 706291
+    },
+    {
+      "code": "fr",
+      "label": "French",
+      "flag": "🇫🇷",
+      "exercises": 1316,
+      "bytes": 685120
+    },
+    {
+      "code": "it",
+      "label": "Italian",
+      "flag": "🇮🇹",
+      "exercises": 1316,
+      "bytes": 677452
+    },
+    {
+      "code": "pl",
+      "label": "Polish",
+      "flag": "🇵🇱",
+      "exercises": 1316,
+      "bytes": 602519
+    },
+    {
+      "code": "ru",
+      "label": "Russian",
+      "flag": "🇷🇺",
+      "exercises": 1316,
+      "bytes": 585789
+    },
+    {
+      "code": "tr",
+      "label": "Turkish",
+      "flag": "🇹🇷",
+      "exercises": 1316,
+      "bytes": 653916
+    },
+    {
+      "code": "zh",
+      "label": "Chinese",
+      "flag": "🇨🇳",
+      "exercises": 1316,
+      "bytes": 183419
+    },
+    {
+      "code": "hi",
+      "label": "Hindi",
+      "flag": "🇮🇳",
+      "exercises": 1316,
+      "bytes": 628136
+    },
+    {
+      "code": "ko",
+      "label": "Korean",
+      "flag": "🇰🇷",
+      "exercises": 1316,
+      "bytes": 283136
+    }
+  ],
+  "licensing": {
+    "data": {
+      "license": "MIT",
+      "copyright": "Copyright (c) 2026 Hasan Emir Yıldırım",
+      "note": "Exercise names, taxonomy and instruction text/translations are MIT licensed. The copyright notice is retained here and surfaced in the app as MIT requires."
+    },
+    "media": {
+      "included": false,
+      "copyright": "© Gym Visual — https://gymvisual.com/",
+      "note": "The upstream images/ and videos/ media is NOT covered by the MIT grant; upstream states that cloning grants no media licence. IronLog ships no media and strips image, gif_url, media_id and attribution fields.",
+      "mediaFieldsStripped": 5296
+    },
+    "upstreamLicenseContainsMediaException": true
+  }
+}
