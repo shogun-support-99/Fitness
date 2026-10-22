@@ -65,17 +65,40 @@ in `fonts/OFL-Geist.txt`, the fonts are not sold, and they are unmodified.
 
 ## Agent skills used during development — not redistributed
 
-Two AI agent skill packs were installed in the maintainer's local agent
+Three AI agent skill packs were installed in the maintainer's local agent
 environment while building this project. They are development-time guidance
 only, are not dependencies of the app, are not vendored into this repository,
 and have no effect on the licence of the app:
 
-    impeccable            — https://github.com/pbakaus/impeccable   (Apache-2.0)
-    design-taste-frontend — https://github.com/Leonxlnx/taste-skill (MIT, © 2026 Leonxlnx)
+    impeccable            — https://github.com/pbakaus/impeccable                (Apache-2.0)
+    design-taste-frontend — https://github.com/Leonxlnx/taste-skill              (MIT, © 2026 Leonxlnx)
+    ui-ux-pro-max         — https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
+                                                                                (MIT, © 2024 Next Level Builder)
 
-The visual design of this project was produced by applying the design guidance
-in those packs. All HTML, CSS, JavaScript and SVG in this repository is
-original work; no content was copied from either pack.
+The visual design and the motion system of this project were produced by
+applying the design guidance in those packs — including the animation durations,
+easing categories and reduced-motion handling queried from ui-ux-pro-max's local
+motion dataset. All HTML, CSS, JavaScript and SVG in this repository is original
+work; no content was copied from any pack.
+
+## Exercise media is not redistributed
+
+No exercise media — thumbnails or animation GIFs — is redistributed by this
+project. The upstream MEDIA EXCEPTION removes the dataset's `images/` and
+`videos/` directories from its MIT grant: that media is © Gym Visual
+(https://gymvisual.com/), included upstream with the rights holder's written
+permission, and governed by Gym Visual's own Terms & Conditions. Cloning the
+dataset confers no licence to that media, so publishing it from this project
+would infringe whatever the rest of the dataset permits.
+
+The exercise visuals that do ship are drawn by `app/js/diagrams.js`: original
+animated vector geometry generated from the dataset's MIT-licensed metadata
+fields (category, muscle, muscleGroup, target, equipment, secondaryMuscles).
+They are not derived from any third-party artwork.
+
+`app/media/README.md` documents the empty slot that accepts media a downstream
+user does hold rights to, with the attribution Gym Visual's terms require
+("© Gym visual — https://gymvisual.com/") pre-wired as the default credit.
 
 ## Everything else
 

@@ -41,7 +41,7 @@ export function renderStats(store) {
   return `
     <section class="view view-stats">
       <header class="view-head">
-        <div><p class="eyebrow">Across ${life.workouts} sessions</p><h1>Progress</h1></div>
+        <div><h1>Progress</h1><p class="view-subline">Across ${life.workouts} session${life.workouts === 1 ? "" : "s"}</p></div>
       </header>
 
       <div class="tile-grid tile-grid-4">

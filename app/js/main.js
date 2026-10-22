@@ -13,6 +13,16 @@ import { searchExercises } from "./exercises.js";
 import { hasInstructions, stepsFor } from "./catalogue.js";
 import { compactNumber, estimatedOneRepMax } from "./stats.js";
 import { esc, icon } from "./ui.js";
+import {
+  initReveals,
+  initCounters,
+  initChartMotion,
+  initPressFeedback,
+  initTicker,
+  drawTick,
+  celebrateRecord,
+  prefersReducedMotion,
+} from "./motion.js";
 
 import { renderHome } from "./views/home.js";
 import { renderWorkout, PICKER_CAP } from "./views/workout.js";
@@ -36,6 +46,26 @@ const restTimer = new RestTimer({
 const router = new Router({ onNavigate: (route) => render(route) });
 
 const $ = (selector, root = document) => root.querySelector(selector);
+
+/**
+ * Motion teardowns. Every re-render replaces the outlet's markup, so any
+ * IntersectionObserver watching the old nodes must be disconnected first or it
+ * leaks for the life of the page. A logger stays open for an hour.
+ */
+let motionTeardowns = [];
+function teardownMotion() {
+  for (const fn of motionTeardowns) {
+    try { fn(); } catch { /* a torn-down observer is not an error */ }
+  }
+  motionTeardowns = [];
+}
+function startMotion(root) {
+  teardownMotion();
+  motionTeardowns.push(initReveals(root));
+  motionTeardowns.push(initCounters(root));
+  motionTeardowns.push(initChartMotion(root));
+  motionTeardowns.push(initTicker(root));
+}
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 // ── Render loop ────────────────────────────────────────────────────────────
@@ -80,6 +110,10 @@ function render(navigation = router.current) {
 
   const view = VIEWS[navigation.route] ?? VIEWS.home;
   outlet.innerHTML = view(navigation.params);
+
+  // Motion is wired after the markup exists, and torn down before the next
+  // render, so a view change never leaves an observer on detached nodes.
+  startMotion(outlet);
 
   syncNav(navigation.route);
   restoreFocus(focusKey);
@@ -297,17 +331,39 @@ const actions = {
     const next = !set.done;
     store.updateSet(active.id, el.dataset.entry, el.dataset.set, { done: next });
 
+    let recordDetail = null;
     if (next && set.weight > 0 && set.reps > 0) {
       const oneRm = estimatedOneRepMax(set.weight, set.reps);
       if (oneRm > 0) {
         const previousBest = previousBestOneRm(active, entry.exerciseId, set.id);
         if (oneRm > previousBest) {
           toast(`New session best — est. 1RM ${compactNumber(oneRm)} ${store.settings.units}`, { tone: "accent" });
+          // Real data only: this fires because a computed 1RM beat the session's
+          // previous best, never on a timer or for decoration.
+          recordDetail = {
+            exercise: entry.name || "This lift",
+            value: compactNumber(oneRm),
+            unit: store.settings.units,
+            kind: "session-best",
+          };
         }
       }
     }
     if (next && store.settings.autoStartRestTimer) restTimer.start(store.settings.restSeconds);
+
+    if (next) {
+      // Feedback before the re-render, on the row the user just touched.
+      const row = el.closest(".set-row");
+      if (row) drawTick(row);
+    }
     render();
+    if (recordDetail) {
+      const target =
+        $('[data-focus-key="set-row-' + el.dataset.entry + "-" + el.dataset.set + '"]') ||
+        $(".logger-clock") ||
+        $("#view-outlet");
+      celebrateRecord(target, recordDetail);
+    }
   },
 
   "rest-now": () => restTimer.start(store.settings.restSeconds),
@@ -609,6 +665,18 @@ function showSummary(workout, summary) {
       </div>
     </div>`;
   openSheet("summary-modal");
+
+  // The session's authored moment: the summary mark stamps in and radiates
+  // linework when a record actually broke. Under reduced motion it simply lands.
+  if (records.length > 0) {
+    const mark = $("#summary-content .summary-mark");
+    celebrateRecord(mark, {
+      exercise: records[0].name,
+      value: String(records.length),
+      unit: records.length === 1 ? "record" : "records",
+      kind: "session-summary",
+    });
+  }
 }
 
 function filterPicker() {
@@ -855,6 +923,7 @@ store.subscribe((event) => {
 
 function boot() {
   applyTheme();
+  initPressFeedback(document);
   if (!globalThis.location.hash) globalThis.location.hash = "#/home";
   router.start();
 

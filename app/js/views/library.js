@@ -11,6 +11,7 @@
 import { EQUIPMENT, MUSCLE_GROUPS, searchExercises } from "../exercises.js";
 import { availableLanguages, hasInstructions } from "../catalogue.js";
 import { emptyState, esc, icon, muscleBadge } from "../ui.js";
+import { exerciseMedia, muscleDiagram, movementClass } from "../diagrams.js";
 
 /** Rows rendered before asking the user to narrow the search. */
 export const RESULT_CAP = 120;
@@ -26,11 +27,11 @@ export function renderLibrary(store, { query = "", muscle = "all" } = {}) {
     <section class="view view-library">
       <header class="view-head">
         <div>
-          <p class="eyebrow">
-            ${all.length} exercises${customCount ? ` · ${customCount} custom` : ""}
+          <h1>Library</h1>
+          <p class="view-subline">
+            ${all.length} exercise${all.length === 1 ? "" : "s"}${customCount ? ` · ${customCount} custom` : ""}
             ${catalogueReady ? "" : " · loading catalogue…"}
           </p>
-          <h1>Library</h1>
         </div>
         <button class="btn btn-primary" data-action="open-custom-exercise">${icon("plus")} New</button>
       </header>
@@ -148,6 +149,23 @@ export function renderExerciseDetail(exercise, { store = null, stepsResult = nul
           ? `<span class="tag">category · ${esc(exercise.category)}</span>`
           : ""}
       </div>
+
+      ${/*
+        The media slot. IronLog ships no third-party exercise media: the dataset's
+        GIFs are (c) Gym Visual under an explicit MEDIA EXCEPTION that cloning does
+        not transfer. This renders a licensed local file when the user supplies one
+        (app/media/README.md), and otherwise an original movement diagram drawn
+        from the exercise's own MIT-licensed fields.
+      */ ""}
+      <div class="detail-visual" data-reveal="draw">
+        ${exerciseMedia(exercise)}
+        ${muscleDiagram(exercise) || ""}
+      </div>
+
+      <p class="detail-movement">
+        <span class="movement-label">Movement</span>
+        <span class="movement-value">${esc(movementClass(exercise))}</span>
+      </p>
 
       ${exercise.secondaryMuscles?.length
         ? `<div class="detail-secondary">

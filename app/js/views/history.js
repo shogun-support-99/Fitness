@@ -33,8 +33,8 @@ export function renderHistory(store, { openId = null } = {}) {
     <section class="view view-history">
       <header class="view-head">
         <div>
-          <p class="eyebrow">${completed.length} sessions</p>
           <h1>History</h1>
+          <p class="view-subline">${completed.length} session${completed.length === 1 ? "" : "s"}</p>
         </div>
       </header>
 

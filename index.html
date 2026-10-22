@@ -61,7 +61,7 @@
               Log the set.<br />
               Own the numbers.
             </h1>
-            <p class="lede">
+            <p class="lede" data-reveal="rise">
               IronLog is a strength training journal that runs entirely in your browser.
               Weight, reps, rest and the record you broke — written down as you train, and
               never sent anywhere. No sign-up wall, no subscription, no analytics.
@@ -73,19 +73,19 @@
               </a>
               <a class="btn btn-outline btn-lg" href="#capabilities">What it does</a>
             </div>
-            <p class="proof-line">
-              <strong>1,388</strong> exercises
+            <p class="proof-line" data-reveal="rise">
+              <strong data-count-to="1388">1,388</strong> exercises
               <span class="rule-sep" aria-hidden="true"></span>
-              <strong>10</strong> instruction languages
+              <strong data-count-to="10">10</strong> instruction languages
               <span class="rule-sep" aria-hidden="true"></span>
-              <strong>0</strong> accounts, trackers or servers
+              <strong data-count-to="0">0</strong> accounts, trackers or servers
             </p>
           </div>
 
           <!-- The artefact. Real arithmetic: every figure below is computed with
                the same Epley formula the app uses, and the column totals close.
                It is sample data, and it says so. -->
-          <figure class="logsheet" aria-label="A sample IronLog training sheet">
+          <figure class="logsheet" data-tilt data-sheet-write aria-label="A sample IronLog training sheet">
             <figcaption class="logsheet-head">
               <span class="logsheet-title">Training log</span>
               <span class="logsheet-date">Tuesday 14 October</span>
@@ -99,14 +99,14 @@
                 </header>
                 <table class="logtable">
                   <thead>
-                    <tr><th scope="col">Set</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Est 1RM</th><th scope="col"><span class="sr-only">Done</span></th></tr>
+                    <tr style="--row:1"><th scope="col">Set</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Est 1RM</th><th scope="col"><span class="sr-only">Done</span></th></tr>
                   </thead>
                   <tbody>
-                    <tr class="is-done"><th scope="row">1</th><td>80</td><td>8</td><td>101.3</td><td><span class="tick" aria-hidden="true"></span></td></tr>
-                    <tr class="is-done is-record"><th scope="row">2</th><td>85</td><td>6</td><td>102.0<span class="record-mark">PR</span></td><td><span class="tick" aria-hidden="true"></span></td></tr>
-                    <tr class="is-done"><th scope="row">3</th><td>85</td><td>5</td><td>99.2</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done" style="--row:2"><th scope="row">1</th><td>80</td><td>8</td><td>101.3</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done is-record" style="--row:3"><th scope="row">2</th><td>85</td><td>6</td><td>102.0<span class="record-mark">PR</span></td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done" style="--row:4"><th scope="row">3</th><td>85</td><td>5</td><td>99.2</td><td><span class="tick" aria-hidden="true"></span></td></tr>
                   </tbody>
-                  <tfoot><tr><th scope="row">Volume</th><td colspan="4">1,575 kg</td></tr></tfoot>
+                  <tfoot><tr style="--row:5"><th scope="row">Volume</th><td colspan="4">1,575 kg</td></tr></tfoot>
                 </table>
               </section>
 
@@ -117,14 +117,14 @@
                 </header>
                 <table class="logtable">
                   <thead>
-                    <tr><th scope="col">Set</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Est 1RM</th><th scope="col"><span class="sr-only">Done</span></th></tr>
+                    <tr style="--row:6"><th scope="col">Set</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Est 1RM</th><th scope="col"><span class="sr-only">Done</span></th></tr>
                   </thead>
                   <tbody>
-                    <tr class="is-done"><th scope="row">1</th><td>32</td><td>10</td><td>42.7</td><td><span class="tick" aria-hidden="true"></span></td></tr>
-                    <tr class="is-done"><th scope="row">2</th><td>32</td><td>9</td><td>41.6</td><td><span class="tick" aria-hidden="true"></span></td></tr>
-                    <tr><th scope="row">3</th><td>30</td><td>8</td><td>38.0</td><td><span class="tick is-pending" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done" style="--row:7"><th scope="row">1</th><td>32</td><td>10</td><td>42.7</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done" style="--row:8"><th scope="row">2</th><td>32</td><td>9</td><td>41.6</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr style="--row:9"><th scope="row">3</th><td>30</td><td>8</td><td>38.0</td><td><span class="tick is-pending" aria-hidden="true"></span></td></tr>
                   </tbody>
-                  <tfoot><tr><th scope="row">Volume</th><td colspan="4">848 kg</td></tr></tfoot>
+                  <tfoot><tr style="--row:10"><th scope="row">Volume</th><td colspan="4">848 kg</td></tr></tfoot>
                 </table>
               </section>
 
@@ -149,7 +149,7 @@
       <section class="section" id="capabilities">
         <div class="wrap">
           <header class="section-head">
-            <h2>What the log does</h2>
+            <h2 data-reveal="rise">What the log does</h2>
             <p class="section-sub">
               Built around the four things you check mid-set: what you lifted last time, how
               much rest is left, whether this is a personal best, and where the session is
@@ -157,7 +157,7 @@
             </p>
           </header>
 
-          <dl class="menu">
+          <dl class="menu" data-reveal="write">
             <div class="menu-item">
               <dt>Set logging</dt>
               <dd>
@@ -211,7 +211,7 @@
       <section class="section section-paper" id="library">
         <div class="wrap library-grid">
           <div>
-            <h2>1,388 exercises, and how to do them</h2>
+            <h2 data-reveal="rise">1,388 exercises, and how to do them</h2>
             <p class="section-sub">
               Around ninety curated staples plus an open catalogue of 1,316 movements,
               searchable as you type and ranked by relevance. Every catalogue entry carries
@@ -228,7 +228,7 @@
 
           <!-- The instruction card: another piece of the same stationery, with a
                perforated top edge where it tears off the sheet. -->
-          <figure class="cardstub" aria-label="Sample exercise instructions">
+          <figure class="cardstub" data-reveal="write" aria-label="Sample exercise instructions">
             <figcaption class="cardstub-head">
               <span class="cardstub-title">Barbell Bent Arm Pullover</span>
               <span class="cardstub-meta">back · barbell</span>
@@ -249,8 +249,8 @@
       <!-- ── Privacy, as a statement rather than a badge row ────────────── -->
       <section class="section" id="privacy">
         <div class="wrap privacy-grid">
-          <div class="privacy-statement">
-            <h2>There is no server to leak your data from</h2>
+          <div class="privacy-statement" data-reveal="write">
+            <h2 data-reveal="rise">There is no server to leak your data from</h2>
             <p class="section-sub">
               IronLog is a static site. It has no backend, no database, no analytics script
               and no account system, so there is nothing to breach and nothing to sell.
@@ -269,7 +269,7 @@
             </p>
           </div>
 
-          <ul class="ledger-list">
+          <ul class="ledger-list" data-reveal="write">
             <li><span>No sign-up</span><em>Nothing to register, verify or remember.</em></li>
             <li><span>No tracking</span><em>No analytics, pixels, cookies or third-party fonts.</em></li>
             <li><span>No runtime dependencies</span><em>Vanilla ES modules and inline SVG. No CDN calls.</em></li>
@@ -283,10 +283,10 @@
       <section class="section section-paper" id="questions">
         <div class="wrap wrap-narrow">
           <header class="section-head">
-            <h2>Things worth knowing</h2>
+            <h2 data-reveal="rise">Things worth knowing</h2>
           </header>
 
-          <div class="faq">
+          <div class="faq" data-reveal="write">
             <details>
               <summary>Is it really free?</summary>
               <p>
@@ -352,7 +352,7 @@
       <!-- ── First step, already open ──────────────────────────────────── -->
       <section class="section final-cta">
         <div class="wrap">
-          <h2>Your training log should outlive the app store</h2>
+          <h2 data-reveal="rise">Your training log should outlive the app store</h2>
           <p>Start with an empty workout and see how fast the sets add up.</p>
           <div class="cta-row">
             <a class="btn btn-primary btn-lg" href="./app/">Open IronLog</a>
