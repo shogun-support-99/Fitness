@@ -24,6 +24,7 @@ import {
   weeklyVolume,
   workoutDurationMinutes,
   workoutSetCount,
+  completedSetVolume,
   workoutVolume,
 } from "../app/js/stats.js";
 
@@ -103,6 +104,49 @@ describe("volume", () => {
     assert.equal(exerciseVolume({}), 0);
     assert.equal(workoutVolume(undefined), 0);
     assert.equal(workoutVolume({ exercises: "nope" }), 0);
+  });
+});
+
+describe("completedSetVolume", () => {
+  test("counts only sets flagged done", () => {
+    const w = workout({
+      id: "w1",
+      startedAt: iso(0),
+      endedAt: iso(0),
+      exercises: [entry("bench", [set(100, 5), set(50, 5, false)])],
+    });
+    // 500 from the ticked set; the unticked 250 is excluded.
+    assert.equal(completedSetVolume(w), 500);
+  });
+
+  test("agrees with workoutSetCount on what a set is", () => {
+    // This is the invariant the UI depends on. workoutVolume counts every set
+    // while workoutSetCount counts only done ones, so printing those two in one
+    // sentence produced "0 sets · 480 kg". Anywhere a count and a volume share a
+    // sentence they must both come from the done-only pair.
+    const sets = [set(100, 5), set(50, 5, false), set(0, 0, false)];
+    const w = workout({ id: "w1", startedAt: iso(0), endedAt: iso(0), exercises: [entry("bench", sets)] });
+    const count = workoutSetCount(w);
+    const volume = completedSetVolume(w);
+    assert.equal(count, 1);
+    assert.equal(volume, 500);
+    assert.equal(count === 0 && volume > 0, false, "zero sets must never carry nonzero volume");
+  });
+
+  test("differs from workoutVolume exactly when a set is unticked", () => {
+    const ticked = workout({ id: "a", startedAt: iso(0), endedAt: iso(0), exercises: [entry("bench", [set(100, 5)])] });
+    assert.equal(completedSetVolume(ticked), workoutVolume(ticked));
+
+    const mixed = workout({ id: "b", startedAt: iso(0), endedAt: iso(0), exercises: [entry("bench", [set(100, 5), set(50, 5, false)])] });
+    assert.equal(workoutVolume(mixed), 750, "workoutVolume still counts every set");
+    assert.equal(completedSetVolume(mixed), 500, "completedSetVolume does not");
+  });
+
+  test("handles missing or malformed structures", () => {
+    assert.equal(completedSetVolume(null), 0);
+    assert.equal(completedSetVolume({}), 0);
+    assert.equal(completedSetVolume({ exercises: "nope" }), 0);
+    assert.equal(completedSetVolume({ exercises: [{}] }), 0);
   });
 });
 

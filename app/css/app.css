@@ -469,9 +469,6 @@ table,
   padding: 16px 14px calc(76px + env(safe-area-inset-bottom, 0px));
 }
 
-.tabbar {
-  display: none;
-}
 
 .icon {
   width: 16px;
@@ -2072,6 +2069,25 @@ select {
   margin-top: 2px;
 }
 
+.detail-sets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-sets li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-sets li:last-child {
+  border-bottom: none;
+}
+
 .detail-set-n {
   font-family: var(--mono);
   color: var(--muted);
@@ -2079,6 +2095,13 @@ select {
 
 .detail-set-v {
   font-family: var(--mono);
+}
+
+.detail-set-vol {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
 }
 
 .detail-instructions-head {
@@ -2540,23 +2563,31 @@ select {
   animation-delay: var(--reveal-delay);
 }
 
-.reveal-write {
+/* The animation-name is gated on .is-revealed, which the IntersectionObserver
+   adds. Without that gate the reveal plays on page load and everything below the
+   fold has finished animating before the reader scrolls to it. Gating it also
+   keeps the no-JS case correct: with no observer there is no class, so there is
+   no animation, and the element simply sits in its normal visible state. */
+.reveal-grow {
+  transform-origin: bottom center;
+}
+
+.reveal-write.is-revealed {
   animation-name: reveal-write;
 }
-.reveal-rise {
+.reveal-rise.is-revealed {
   animation-name: reveal-rise;
   animation-duration: var(--dur-base);
 }
-.reveal-grow {
+.reveal-grow.is-revealed {
   animation-name: reveal-grow;
-  transform-origin: bottom center;
 }
-.reveal-stamp {
+.reveal-stamp.is-revealed {
   animation-name: reveal-stamp;
   animation-timing-function: var(--ease-spring);
   animation-duration: 420ms;
 }
-.reveal-draw {
+.reveal-draw.is-revealed {
   animation-name: reveal-draw;
   animation-duration: 700ms;
 }
@@ -2781,6 +2812,37 @@ select {
   offset-rotate: 0deg;
 }
 
+/* offset-path: path() needs Safari 16+ / Chrome 46+ / Firefox 72+. Where it is
+   missing, the mover has no path to sit on and would be painted at the SVG
+   origin - a barbell parked in the top-left corner of its own diagram. Rather
+   than show that, fall back to a simple vertical travel that needs nothing but
+   transform, and keep the drawn travel path (which is plain SVG and works
+   everywhere) as the thing that still explains the movement. */
+@supports not (offset-path: path("M0 0")) {
+  .dg-mover {
+    offset-path: none !important;
+  }
+
+  .is-animated .dg-mover,
+  .is-animated .dg-mover[data-reverse="1"] {
+    animation-name: dg-fallback-travel;
+    animation-duration: 2600ms;
+    animation-timing-function: var(--ease-out-soft);
+    animation-delay: 900ms;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  @keyframes dg-fallback-travel {
+    from {
+      transform: translate3d(0, 26px, 0);
+    }
+    to {
+      transform: translate3d(0, -26px, 0);
+    }
+  }
+}
+
 .is-animated .dg-mover {
   animation: dg-travel 2600ms var(--ease-out-soft) 900ms infinite alternate;
 }
@@ -2861,7 +2923,7 @@ select {
 
 .dg-core text {
   fill: var(--data-ink, var(--data));
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0;
@@ -2951,7 +3013,7 @@ select {
 }
 
 .movement-value {
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: var(--fs-small);
   font-variant-numeric: tabular-nums;
   text-transform: capitalize;
@@ -3082,7 +3144,6 @@ select {
   }
 }
 
-.set-row .check-draw,
 .set-row [data-action="toggle-set"] svg path {
   stroke-dasharray: 26;
 }
@@ -3219,7 +3280,7 @@ select {
   padding: 0 12px;
   border-right: 1px solid var(--border);
   background: var(--raised);
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: var(--fs-meta);
   font-variant-numeric: tabular-nums;
   color: var(--muted);
@@ -3281,7 +3342,7 @@ select {
 }
 
 .ticker-item b {
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-weight: 400;
   font-size: var(--fs-small);
   color: var(--text);
@@ -3359,23 +3420,6 @@ select {
   transform: scaleX(1);
 }
 
-/* Mobile tabbar: one indicator element travelling between items, so the active
-   state is a shared-element transition rather than five independent flips. */
-.tabbar {
-  position: relative;
-}
-
-.tabbar-indicator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--tab-w, 20%);
-  height: 2px;
-  background: var(--text);
-  transform: translate3d(var(--tab-x, 0), 0, 0);
-  transition: transform 340ms var(--ease-expo);
-  pointer-events: none;
-}
 
 /* ── 10. Charts ───────────────────────────────────────────────────────────
    Bars grow from the baseline with a stagger. The true height is already in
@@ -3592,7 +3636,6 @@ select {
 
 @media print {
   .sidebar,
-  .tabbar,
   .timer-bar,
   #toast-host,
   .btn,

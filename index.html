@@ -130,7 +130,10 @@
 
               <div class="logsheet-rest">
                 <span class="rest-label">Rest</span>
-                <span class="rest-track"><i style="width: 62%"></i></span>
+                <!-- 48s left on the app's 2:00 default rest is 40% remaining.
+                     The bar and the readout have to agree: a sample sheet that
+                     does not add up teaches the reader nothing. -->
+                <span class="rest-track"><i style="width: 40%; --rest-end: 0.4"></i></span>
                 <span class="rest-read">0:48</span>
               </div>
             </div>

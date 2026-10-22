@@ -11,7 +11,7 @@ import { RestTimer, formatElapsed, formatSeconds } from "./timer.js";
 import { Router, parseHash } from "./router.js";
 import { searchExercises } from "./exercises.js";
 import { hasInstructions, stepsFor } from "./catalogue.js";
-import { compactNumber, estimatedOneRepMax } from "./stats.js";
+import { compactNumber, completedSetVolume, estimatedOneRepMax, workoutSetCount } from "./stats.js";
 import { esc, icon } from "./ui.js";
 import {
   initReveals,
@@ -358,8 +358,14 @@ const actions = {
     }
     render();
     if (recordDetail) {
+      // The row the user just ticked, found by the attribute it actually carries.
+      // This used to look for data-focus-key="set-row-<entry>-<set>", which no
+      // view emits, so it always fell through to .logger-clock or the whole
+      // outlet - and a burst positioned over #view-outlet covers the screen
+      // instead of marking the set that earned it.
+      const sid = el.dataset.set;
       const target =
-        $('[data-focus-key="set-row-' + el.dataset.entry + "-" + el.dataset.set + '"]') ||
+        (sid && $(`.set-row[data-set="${CSS.escape(sid)}"]`)) ||
         $(".logger-clock") ||
         $("#view-outlet");
       celebrateRecord(target, recordDetail);
@@ -626,11 +632,8 @@ function updateSetRowInPlace(input) {
   if (headVolume) {
     const active = store.activeWorkout();
     if (active) {
-      const doneSets = active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
-      const volume = active.exercises.reduce(
-        (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
-        0,
-      );
+      const doneSets = workoutSetCount(active);
+      const volume = completedSetVolume(active);
       headVolume.textContent = `${doneSets} sets · ${compactNumber(volume)} ${store.settings.units}`;
     }
   }

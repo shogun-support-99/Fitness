@@ -1356,8 +1356,9 @@ tr.is-done .tick::after {
 
 /* The rest rule drains once, on load, then holds. A looping drain on a static
    page would be a lie about a timer that is not running. */
-[data-sheet-write] .logsheet-rest .rest-fill,
-[data-sheet-write] .rest-fill {
+/* The element is .rest-track > i, not .rest-fill - the previous selector named
+   a class the markup never carried, so this animation silently never ran. */
+[data-sheet-write] .rest-track i {
   animation: rest-drain 2200ms var(--ease-out-soft) 900ms both;
   transform-origin: left center;
 }
@@ -1382,18 +1383,22 @@ tr.is-done .tick::after {
   animation-fill-mode: both;
 }
 
-[data-reveal="write"] {
+/* Gated on .is-revealed, which landing.js adds from an IntersectionObserver.
+   Ungated, these all played on load and the sections below the hero had already
+   finished animating before the reader reached them. The hero sheet's own
+   write-in is deliberately NOT gated - that one is meant to play on load. */
+[data-reveal="write"].is-revealed {
   animation-name: reveal-write;
 }
-[data-reveal="rise"] {
+[data-reveal="rise"].is-revealed {
   animation-name: reveal-rise;
   animation-duration: 480ms;
 }
-[data-reveal="rule"] {
+[data-reveal="rule"].is-revealed {
   animation-name: rule-draw;
   animation-duration: 700ms;
 }
-[data-reveal="stamp"] {
+[data-reveal="stamp"].is-revealed {
   animation-name: pr-stamp;
   animation-timing-function: var(--ease-spring);
 }
@@ -1552,8 +1557,8 @@ tr.is-done .tick::after {
   }
 
   /* The rest rule holds at its stated value rather than draining. */
-  .rest-fill {
-    transform: scaleX(var(--rest-end, 0.32)) !important;
+  .rest-track i {
+    transform: none !important;
     animation: none !important;
   }
 

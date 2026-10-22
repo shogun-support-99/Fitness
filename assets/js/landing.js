@@ -133,7 +133,6 @@ function initCounters() {
     }
     el.innerHTML = odometerMarkup(to, decimals);
     void el.offsetWidth; // flush so the transition runs from the 0 position
-    el.classList.add("is-rolled");
   };
 
   if (prefersReducedMotion() || !canObserve) {

@@ -379,7 +379,12 @@ export function initTicker(root, { selector = "[data-ticker]", speed = 46 } = {}
       track.after(clone);
     }
     const items = track.children.length || 1;
-    track.style.setProperty("--ticker-duration", `${Math.max(12, items * speed / 6)}s`);
+    // The duration goes on the CONTAINER, not the track. The clone is a sibling
+    // of the track, so a custom property set inline on the original would not
+    // reach it - the clone would fall back to the CSS default and the two halves
+    // would drift apart, which reads as a visible jump every loop. Set it on the
+    // shared parent and both inherit the same value.
+    el.style.setProperty("--ticker-duration", `${Math.max(12, (items * speed) / 6)}s`);
     el.classList.add("ticker-running");
 
     const pause = () => el.classList.add("ticker-paused");
@@ -413,7 +418,12 @@ export function initTicker(root, { selector = "[data-ticker]", speed = 46 } = {}
  * back. Delegated once per document, so re-rendered views are covered without
  * re-wiring. Keyboard activation gets the same treatment via :active.
  */
-export function initPressFeedback(root, { selector = "[data-press]" } = {}) {
+export function initPressFeedback(root, {
+  // This defaulted to "[data-press]", an attribute no view ever emitted, so the
+  // handler matched nothing and the whole function was dead. The real controls
+  // are these classes; data-press is still honoured for anything added later.
+  selector = "[data-press], .btn, .icon-btn, .chip, .timer-btn, .nav-item",
+} = {}) {
   const scope = root || document;
   if (prefersReducedMotion()) return () => {};
 

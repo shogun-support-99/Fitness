@@ -57,6 +57,26 @@ export function workoutVolume(workout) {
   return workout.exercises.reduce((sum, e) => sum + exerciseVolume(e), 0);
 }
 
+/** Volume of only the completed sets in a workout.
+ *
+ * `workoutVolume` deliberately counts every set including unticked ones, which
+ * is right for "what did I move in total". But it must never be printed next to
+ * `workoutSetCount`, which counts only done sets: the pair then reads
+ * "0 sets · 480 kg". Wherever a set count and a volume share a sentence, use
+ * this so both figures mean the same thing by "set".
+ */
+export function completedSetVolume(workout) {
+  if (!workout || !Array.isArray(workout.exercises)) return 0;
+  return workout.exercises.reduce(
+    (sum, e) =>
+      sum +
+      (e.sets ?? [])
+        .filter((s) => s.done)
+        .reduce((v, s) => v + setVolume(s.weight, s.reps), 0),
+    0,
+  );
+}
+
 /** Count of completed sets in a workout (only sets flagged done). */
 export function workoutSetCount(workout) {
   if (!workout || !Array.isArray(workout.exercises)) return 0;

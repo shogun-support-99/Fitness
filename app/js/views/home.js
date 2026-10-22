@@ -5,7 +5,7 @@
  * numbers, and the most recent workouts.
  */
 
-import { compactNumber, personalRecords, relativeTime, streaks, workoutDurationMinutes, workoutSetCount, workoutVolume } from "../stats.js";
+import { compactNumber, completedSetVolume, personalRecords, relativeTime, streaks, workoutDurationMinutes, workoutSetCount } from "../stats.js";
 import { emptyState, esc, icon, muscleBadge, statTile } from "../ui.js";
 
 export function renderHome(store) {
@@ -14,12 +14,15 @@ export function renderHome(store) {
   const streak = streaks(completed);
   const recent = completed.slice(0, 4);
   const index = store.exerciseIndex();
+  // Read once and threaded through, rather than hardcoded per call site: three
+  // places on this screen said "kg" while the user had asked for pounds.
+  const units = store.settings.units;
 
   const lastSevenDays = completed.filter((w) => {
     const days = (Date.now() - new Date(w.endedAt ?? w.startedAt).getTime()) / 86_400_000;
     return days <= 7;
   });
-  const weekVolume = lastSevenDays.reduce((sum, w) => sum + workoutVolume(w), 0);
+  const weekVolume = lastSevenDays.reduce((sum, w) => sum + completedSetVolume(w), 0);
 
   return `
     <section class="view view-home">
@@ -32,12 +35,12 @@ export function renderHome(store) {
 
       ${renderTicker(store, completed)}
 
-      ${active ? renderActiveBanner(active, index) : renderStartPanel(store, completed)}
+      ${active ? renderActiveBanner(active, index, units) : renderStartPanel(store, completed)}
 
       <div class="tile-grid">
-        ${statTile({ label: "This week", value: compactNumber(weekVolume), unit: "kg", hint: `${lastSevenDays.length} session${lastSevenDays.length === 1 ? "" : "s"}` })}
-        ${statTile({ label: "Workouts", value: String(completed.length), hint: "all time" })}
-        ${statTile({ label: "Best streak", value: `${streak.best}`, unit: "d", hint: `${streak.activeDays} active days` })}
+        ${statTile({ label: "This week", value: compactNumber(weekVolume), unit: store.settings.units, count: weekVolume, hint: `${lastSevenDays.length} session${lastSevenDays.length === 1 ? "" : "s"}` })}
+        ${statTile({ label: "Workouts", value: String(completed.length), count: completed.length, hint: "all time" })}
+        ${statTile({ label: "Best streak", value: `${streak.best}`, unit: "d", count: streak.best, hint: `${streak.activeDays} active day${streak.activeDays === 1 ? "" : "s"}` })}
       </div>
 
       <section class="panel">
@@ -52,7 +55,7 @@ export function renderHome(store) {
                 title: "No sessions logged yet",
                 body: "Start your first workout and IronLog will track every set, weight and personal record from here on.",
               })
-            : `<ul class="session-list">${recent.map((w) => renderSessionRow(w, index)).join("")}</ul>`
+            : `<ul class="session-list">${recent.map((w) => renderSessionRow(w, index, units)).join("")}</ul>`
         }
       </section>
     </section>`;
@@ -92,7 +95,9 @@ function renderTicker(store, completed) {
   // Then the most recent sessions.
   for (const w of completed.slice(0, 4)) {
     const sets = workoutSetCount(w);
-    const volume = workoutVolume(w);
+    // Done-only, so the strip never pairs a set count with a volume that counts
+    // sets the lifter never ticked.
+    const volume = completedSetVolume(w);
     items.push({
       label: w.name ?? "Session",
       // The unit comes from settings rather than a hardcoded "kg", because the
@@ -130,16 +135,18 @@ function renderTicker(store, completed) {
     </div>`;
 }
 
-function renderActiveBanner(workout, index) {
+function renderActiveBanner(workout, index, units) {
   const sets = workoutSetCount(workout);
-  const volume = workoutVolume(workout);
+  // Done-only, to match the count in the same sentence. Pairing these two is
+  // what produced "0 sets · 480 kg" on an in-progress workout.
+  const volume = completedSetVolume(workout);
   const elapsed = Date.now() - new Date(workout.startedAt).getTime();
   return `
     <div class="active-banner" role="status">
       <div class="active-banner-text">
         <span class="pill pill-live"><span class="dot"></span>In progress</span>
         <h2>${esc(workout.name)}</h2>
-        <p>${workout.exercises.length} exercise${workout.exercises.length === 1 ? "" : "s"} · ${sets} set${sets === 1 ? "" : "s"} · ${compactNumber(volume)} kg · ${Math.max(1, Math.round(elapsed / 60000))} min</p>
+        <p>${workout.exercises.length} exercise${workout.exercises.length === 1 ? "" : "s"} · ${sets} set${sets === 1 ? "" : "s"} · ${compactNumber(volume)} ${esc(units)} · ${Math.max(1, Math.round(elapsed / 60000))} min</p>
       </div>
       <a class="btn btn-primary btn-lg" href="#/workout" data-action="resume-workout">
         ${icon("play")} Resume
@@ -185,10 +192,13 @@ function renderStartPanel(store, completed) {
     </div>`;
 }
 
-function renderSessionRow(workout, index) {
+function renderSessionRow(workout, index, units) {
   const when = relativeTime(workout.endedAt ?? workout.startedAt);
   const summary = workout.summary ?? {
-    volume: Math.round(workoutVolume(workout)),
+    // Must match store.js completeWorkout(), which persists the same pair. If
+    // these diverge a workout shows one figure before its summary is written and
+    // another after.
+    volume: Math.round(completedSetVolume(workout)),
     sets: workoutSetCount(workout),
     minutes: workoutDurationMinutes(workout),
   };
@@ -205,7 +215,7 @@ function renderSessionRow(workout, index) {
         <span class="session-body">
           <span class="session-name">${esc(workout.name)}</span>
           <span class="session-meta">
-            ${summary.sets} sets · ${compactNumber(summary.volume)} kg · ${summary.minutes} min
+            ${summary.sets} set${summary.sets === 1 ? "" : "s"} · ${compactNumber(summary.volume)} ${esc(units)} · ${summary.minutes} min
             ${prCount > 0 ? `<span class="pr-flag">${icon("trophy")} ${prCount} PR${prCount === 1 ? "" : "s"}</span>` : ""}
           </span>
           <span class="badge-row">${muscles.slice(0, 4).map((m) => muscleBadge(m)).join("")}</span>
