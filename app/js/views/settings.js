@@ -20,7 +20,7 @@ export function renderSettings(store) {
   return `
     <section class="view view-settings">
       <header class="view-head">
-        <div><p class="eyebrow">Preferences</p><h1>Settings</h1></div>
+        <div><h1>Settings</h1></div>
       </header>
 
       <section class="panel">
@@ -54,6 +54,28 @@ export function renderSettings(store) {
             <em>Begin the countdown as soon as you tick a set done.</em>
           </span>
         </label>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>Appearance</h2></div>
+        <div class="segmented" role="radiogroup" aria-label="Appearance">
+          ${[
+            ["light", "Light"],
+            ["dark", "Dark"],
+            ["auto", "Match system"],
+          ]
+            .map(
+              ([value, label]) => `
+            <button role="radio" aria-checked="${(s.theme ?? "light") === value}"
+                    class="segment ${(s.theme ?? "light") === value ? "is-active" : ""}"
+                    data-action="set-theme" data-theme="${value}">${label}</button>`,
+            )
+            .join("")}
+        </div>
+        <p class="panel-hint">
+          The ledger is drawn for light: stone paper, ink, and one blue on the numbers that
+          matter. Dark keeps the same rules in true neutral greys.
+        </p>
       </section>
 
       <section class="panel">
@@ -109,7 +131,7 @@ function renderLanguagePanel(store) {
             (l) => `
           <button class="chip ${current === l.code ? "is-active" : ""}"
                   data-action="set-instruction-language" data-lang="${esc(l.code)}">
-            ${esc(l.flag)} ${esc(l.label)}
+            ${esc(l.label)}
           </button>`,
           )
           .join("")}

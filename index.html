@@ -3,305 +3,286 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>IronLog — the strength training log that respects your data</title>
+    <title>IronLog — the strength training log that stays yours</title>
     <meta
       name="description"
-      content="IronLog is a free, offline-first workout logger. Track exercises, sets, volume and personal records with no account, no server and no tracking. Everything stays in your browser."
+      content="IronLog is an offline-first strength training log. 1,388 exercises, set-by-set logging, rest timer and personal records. No account, no server, no tracking. Your log lives in your browser and exports as JSON."
     />
-    <meta name="theme-color" content="#0a0c0f" />
+    <meta name="theme-color" content="#141414" />
     <link rel="canonical" href="./" />
     <link rel="icon" href="./assets/img/logo.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="./assets/img/logo.svg" />
 
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="IronLog — the strength training log that respects your data" />
-    <meta
-      property="og:description"
-      content="A free, offline-first workout logger. Sets, volume, rest timing and personal records. No account, no server, no tracking."
-    />
-    <meta property="og:image" content="./assets/img/og-cover.svg" />
-    <meta name="twitter:card" content="summary_large_image" />
-
+    <!-- Self-hosted under the SIL Open Font License. The page makes no request
+         to any third party, including for its type. -->
+    <link rel="preload" href="./fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="./fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./assets/css/landing.css" />
     <script type="module" src="./assets/js/landing.js" defer></script>
 
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "IronLog",
-        "applicationCategory": "HealthApplication",
-        "operatingSystem": "Web",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "description": "Offline-first strength training logger with exercise library, volume tracking, rest timer and personal records."
-      }
-    </script>
+    <meta property="og:title" content="IronLog — the strength training log that stays yours" />
+    <meta property="og:description" content="Log the set, own the numbers. An offline-first strength training journal with 1,388 exercises and no account." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/img/og-cover.svg" />
   </head>
+
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
 
-    <header class="site-head">
-      <div class="wrap head-inner">
-        <a class="brand" href="./">
-          <img src="./assets/img/logo.svg" alt="" width="30" height="30" />
+    <!-- ── The sheet ────────────────────────────────────────────────────────
+         The page is the object: a training log sheet on a bench. Paper on a
+         dark ground, ruled columns, figures in mono, and the one blue on the
+         record that broke. Everything below is another piece of the same
+         stationery. -->
+    <header class="masthead">
+      <div class="wrap masthead-inner">
+        <a class="wordmark" href="./">
+          <svg class="wordmark-mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 12v8M10 8v16M22 8v16M26 12v8M10 16h12" />
+          </svg>
           <span>IronLog</span>
         </a>
-        <nav class="head-nav" aria-label="Sections">
-          <a href="#features">Features</a>
-          <a href="#how">How it works</a>
+        <nav class="masthead-nav" aria-label="Sections">
+          <a href="#capabilities">Capabilities</a>
+          <a href="#library">Library</a>
           <a href="#privacy">Privacy</a>
-          <a href="#faq">FAQ</a>
+          <a href="#questions">Questions</a>
         </nav>
-        <a class="btn btn-primary btn-sm" href="./app/">Open the app</a>
+        <a class="btn btn-primary" href="./app/">Open the app</a>
       </div>
     </header>
 
     <main id="main">
-      <!-- ── Hero ─────────────────────────────────────────────────────── -->
-      <section class="hero">
-        <div class="wrap hero-inner">
-          <div class="hero-copy">
-            <p class="eyebrow">Free · No account · Works offline</p>
+      <!-- ── First screen: the log sheet itself ───────────────────────────── -->
+      <section class="sheet-hero">
+        <div class="wrap sheet-hero-inner">
+          <div class="sheet-hero-copy">
             <h1>
               Log the set.<br />
-              <span class="accent">Own the numbers.</span>
+              Own the numbers.
             </h1>
             <p class="lede">
               IronLog is a strength training journal that runs entirely in your browser.
-              Track exercises, sets, volume and personal records — then close the tab and
-              take your data with you. No sign-up wall, no subscription, no analytics.
+              Weight, reps, rest and the record you broke — written down as you train, and
+              never sent anywhere. No sign-up wall, no subscription, no analytics.
             </p>
-            <div class="hero-cta">
+            <div class="cta-row">
               <a class="btn btn-primary btn-lg" href="./app/">
                 Start logging
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
               </a>
-              <a class="btn btn-outline btn-lg" href="#features">See what it does</a>
+              <a class="btn btn-outline btn-lg" href="#capabilities">What it does</a>
             </div>
-            <ul class="hero-proof">
-              <li><strong data-count="0" data-target="90">0</strong><span>built-in exercises</span></li>
-              <li><strong data-count="0" data-target="0">0</strong><span>accounts required</span></li>
-              <li><strong data-count="0" data-target="0">0</strong><span>bytes sent anywhere</span></li>
-            </ul>
+            <p class="proof-line">
+              <strong>1,388</strong> exercises
+              <span class="rule-sep" aria-hidden="true"></span>
+              <strong>10</strong> instruction languages
+              <span class="rule-sep" aria-hidden="true"></span>
+              <strong>0</strong> accounts, trackers or servers
+            </p>
           </div>
 
-          <div class="hero-art" aria-hidden="true">
-            <div class="phone">
-              <div class="phone-notch"></div>
-              <div class="phone-screen">
-                <div class="mock-head">
-                  <span class="mock-live"><i></i>Live</span>
-                  <span class="mock-clock">24:31</span>
-                </div>
-                <div class="mock-card">
-                  <div class="mock-title">
-                    <b>Barbell Bench Press</b>
-                    <em>chest · barbell</em>
-                  </div>
-                  <div class="mock-row mock-row-head"><span>Set</span><span>kg</span><span>Reps</span><span>1RM</span><span></span></div>
-                  <div class="mock-row is-done"><span>1</span><span>80</span><span>8</span><span>101</span><span class="mock-tick">✓</span></div>
-                  <div class="mock-row is-done"><span>2</span><span>85</span><span>6</span><span>102</span><span class="mock-tick">✓</span></div>
-                  <div class="mock-row"><span>3</span><span>85</span><span>5</span><span>99</span><span class="mock-tick"></span></div>
-                </div>
-                <div class="mock-card mock-card-dim">
-                  <div class="mock-title"><b>Incline Dumbbell Press</b><em>chest · dumbbell</em></div>
-                  <div class="mock-row mock-row-head"><span>Set</span><span>kg</span><span>Reps</span><span>1RM</span><span></span></div>
-                  <div class="mock-row is-done"><span>1</span><span>32</span><span>10</span><span>43</span><span class="mock-tick">✓</span></div>
-                </div>
-                <div class="mock-timer">
-                  <span class="mock-timer-track"><i style="width:64%"></i></span>
-                  <span class="mock-timer-read">1:04</span>
-                </div>
+          <!-- The artefact. Real arithmetic: every figure below is computed with
+               the same Epley formula the app uses, and the column totals close.
+               It is sample data, and it says so. -->
+          <figure class="logsheet" aria-label="A sample IronLog training sheet">
+            <figcaption class="logsheet-head">
+              <span class="logsheet-title">Training log</span>
+              <span class="logsheet-date">Tuesday 14 October</span>
+            </figcaption>
+
+            <div class="logsheet-body">
+              <section class="logblock">
+                <header class="logblock-head">
+                  <h2>Barbell Bench Press</h2>
+                  <span class="logblock-meta">chest · barbell</span>
+                </header>
+                <table class="logtable">
+                  <thead>
+                    <tr><th scope="col">Set</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Est 1RM</th><th scope="col"><span class="sr-only">Done</span></th></tr>
+                  </thead>
+                  <tbody>
+                    <tr class="is-done"><th scope="row">1</th><td>80</td><td>8</td><td>101.3</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done is-record"><th scope="row">2</th><td>85</td><td>6</td><td>102.0<span class="record-mark">PR</span></td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done"><th scope="row">3</th><td>85</td><td>5</td><td>99.2</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                  </tbody>
+                  <tfoot><tr><th scope="row">Volume</th><td colspan="4">1,575 kg</td></tr></tfoot>
+                </table>
+              </section>
+
+              <section class="logblock">
+                <header class="logblock-head">
+                  <h2>Incline Dumbbell Press</h2>
+                  <span class="logblock-meta">chest · dumbbell</span>
+                </header>
+                <table class="logtable">
+                  <thead>
+                    <tr><th scope="col">Set</th><th scope="col">kg</th><th scope="col">Reps</th><th scope="col">Est 1RM</th><th scope="col"><span class="sr-only">Done</span></th></tr>
+                  </thead>
+                  <tbody>
+                    <tr class="is-done"><th scope="row">1</th><td>32</td><td>10</td><td>42.7</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr class="is-done"><th scope="row">2</th><td>32</td><td>9</td><td>41.6</td><td><span class="tick" aria-hidden="true"></span></td></tr>
+                    <tr><th scope="row">3</th><td>30</td><td>8</td><td>38.0</td><td><span class="tick is-pending" aria-hidden="true"></span></td></tr>
+                  </tbody>
+                  <tfoot><tr><th scope="row">Volume</th><td colspan="4">848 kg</td></tr></tfoot>
+                </table>
+              </section>
+
+              <div class="logsheet-rest">
+                <span class="rest-label">Rest</span>
+                <span class="rest-track"><i style="width: 62%"></i></span>
+                <span class="rest-read">0:48</span>
               </div>
             </div>
-            <div class="glow"></div>
-          </div>
+
+            <figcaption class="logsheet-foot">
+              <span class="logsheet-total">Session total <strong>2,423 kg</strong> across 6 sets</span>
+              <span class="logsheet-note">Sample sheet</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
-      <!-- ── Features ─────────────────────────────────────────────────── -->
-      <section class="section" id="features">
+      <!-- ── Capabilities, as a menu ───────────────────────────────────────
+           A ruled list with leaders, the way a menu or an index sets it — not a
+           grid of identical icon cards. -->
+      <section class="section" id="capabilities">
         <div class="wrap">
           <header class="section-head">
-            <p class="eyebrow">What you get</p>
-            <h2>Everything a training log actually needs</h2>
+            <h2>What the log does</h2>
             <p class="section-sub">
-              Built around the four things you check mid-set: what you lifted last time,
-              how much rest is left, whether this is a personal best, and where the session
-              is going.
+              Built around the four things you check mid-set: what you lifted last time, how
+              much rest is left, whether this is a personal best, and where the session is
+              going.
             </p>
           </header>
 
-          <div class="feature-grid">
-            <article class="feature">
-              <span class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/></svg>
-              </span>
-              <h3>Fast set logging</h3>
-              <p>
-                Weight and reps per set, ticked off as you go. Previous performance sits
-                right next to the field so you never have to remember what you lifted last
-                week. Estimated one-rep max updates as you type.
-              </p>
-            </article>
-
-            <article class="feature">
-              <span class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM12 9v4l2.5 1.5M9 2.5h6"/></svg>
-              </span>
-              <h3>Rest timer that behaves</h3>
-              <p>
-                Starts automatically the moment you complete a set, or on demand. Add 15
-                seconds without breaking flow, and it survives a page reload mid-countdown.
-              </p>
-            </article>
-
-            <article class="feature">
-              <span class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4ZM7 6H4v1.5A3.5 3.5 0 0 0 7.5 11M17 6h3v1.5A3.5 3.5 0 0 1 16.5 11M9.5 20h5M12 14v6"/></svg>
-              </span>
-              <h3>Personal records, tracked honestly</h3>
-              <p>
-                Three separate records per exercise — heaviest weight, most reps, and
-                highest estimated one-rep max. When you beat one, the session summary tells
-                you exactly which.
-              </p>
-            </article>
-
-            <article class="feature">
-              <span class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2"/></svg>
-              </span>
-              <h3>Progress you can read</h3>
-              <p>
-                Weekly volume bars, muscle-group balance across completed sets, lifetime
-                totals and a day streak. Charts are drawn as inline SVG — no charting
-                library, no third-party request.
-              </p>
-            </article>
-
-            <article class="feature">
-              <span class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5.5h7v13H4zM13 5.5h7v13h-7z"/></svg>
-              </span>
-              <h3>Exercise library, extensible</h3>
-              <p>
-                Around ninety common movements grouped by muscle and equipment, searchable
-                as you type. Anything missing — a landmine variation, a machine your gym
-                owns — you add once and it stays.
-              </p>
-            </article>
-
-            <article class="feature">
-              <span class="feature-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 21h16"/></svg>
-              </span>
-              <h3>Export, import, walk away</h3>
-              <p>
-                Your whole history is one JSON document. Export a backup any time, import
-                it into another browser, or erase everything from the settings screen. No
-                vendor lock, because there is no vendor.
-              </p>
-            </article>
-          </div>
+          <dl class="menu">
+            <div class="menu-item">
+              <dt>Set logging</dt>
+              <dd>
+                Weight and reps per set, ticked off as you go. Last session's figure sits
+                inside the field after your number, so you never have to remember what you
+                lifted last week. Estimated one-rep max updates as you type.
+              </dd>
+            </div>
+            <div class="menu-item">
+              <dt>Rest timer</dt>
+              <dd>
+                Starts the moment you tick a set done, or on demand. Add fifteen seconds
+                without breaking flow, and it survives a page reload mid-countdown.
+              </dd>
+            </div>
+            <div class="menu-item">
+              <dt>Personal records</dt>
+              <dd>
+                Three separate records per exercise — heaviest weight, most reps, and highest
+                estimated one-rep max. When you beat one, the session summary names exactly
+                which.
+              </dd>
+            </div>
+            <div class="menu-item">
+              <dt>Progress</dt>
+              <dd>
+                Weekly volume, muscle-group balance across completed sets, lifetime totals and
+                a training-day streak. Charts are drawn as inline SVG — no charting library,
+                no third-party request.
+              </dd>
+            </div>
+            <div class="menu-item">
+              <dt>Templates</dt>
+              <dd>
+                Repeat your last session with its exercises, sets and weights prefilled, or
+                start from a push / pull / legs split and make it your own.
+              </dd>
+            </div>
+            <div class="menu-item">
+              <dt>Your data, portable</dt>
+              <dd>
+                Export the whole history as one JSON document, import it back, or erase it.
+                Every change is written immediately rather than on save.
+              </dd>
+            </div>
+          </dl>
         </div>
       </section>
 
-      <!-- ── How it works ─────────────────────────────────────────────── -->
-      <section class="section section-alt" id="how">
-        <div class="wrap">
-          <header class="section-head">
-            <p class="eyebrow">Workflow</p>
-            <h2>Three taps from the rack to the record</h2>
-          </header>
-
-          <ol class="steps">
-            <li class="step">
-              <span class="step-num">1</span>
-              <div>
-                <h3>Start a session</h3>
-                <p>
-                  Begin empty, repeat your last workout with its sets and weights already
-                  filled in, or pick a Push / Pull / Legs split and get a solid compound
-                  for each group.
-                </p>
-              </div>
-            </li>
-            <li class="step">
-              <span class="step-num">2</span>
-              <div>
-                <h3>Log as you train</h3>
-                <p>
-                  Add exercises from the searchable library, enter weight and reps, tick the
-                  set. The rest timer starts itself and the clock keeps running in the
-                  header.
-                </p>
-              </div>
-            </li>
-            <li class="step">
-              <span class="step-num">3</span>
-              <div>
-                <h3>Finish and keep the evidence</h3>
-                <p>
-                  The summary reports volume, sets, duration and any personal records you
-                  just broke. Everything is written to local storage immediately, so a
-                  closed tab never costs you a session.
-                </p>
-              </div>
-            </li>
-          </ol>
-
-          <div class="cta-band">
-            <h3>Open IronLog and log your first set</h3>
-            <p>No download, no account, no email address. It loads, you train.</p>
-            <a class="btn btn-primary btn-lg" href="./app/">Launch the app</a>
+      <!-- ── The library, as an index page ──────────────────────────────── -->
+      <section class="section section-paper" id="library">
+        <div class="wrap library-grid">
+          <div>
+            <h2>1,388 exercises, and how to do them</h2>
+            <p class="section-sub">
+              Around ninety curated staples plus an open catalogue of 1,316 movements,
+              searchable as you type and ranked by relevance. Every catalogue entry carries
+              numbered step-by-step instructions in ten languages, so the sheet can tell you
+              how the lift goes without leaving the rack.
+            </p>
+            <p class="body-text">
+              The catalogue is fetched after the app paints, and each language pack loads
+              only when you first open an exercise in it — so the app stays quick and a
+              monolingual reader never downloads nine packs they will not read.
+            </p>
+            <a class="btn btn-outline" href="./app/#/library">Browse the library</a>
           </div>
+
+          <!-- The instruction card: another piece of the same stationery, with a
+               perforated top edge where it tears off the sheet. -->
+          <figure class="cardstub" aria-label="Sample exercise instructions">
+            <figcaption class="cardstub-head">
+              <span class="cardstub-title">Barbell Bent Arm Pullover</span>
+              <span class="cardstub-meta">back · barbell</span>
+            </figcaption>
+            <ol class="cardstub-steps">
+              <li>Lie back on the bench with the barbell held above your chest.</li>
+              <li>Keep a slight bend in the elbows as you lower the bar behind your head.</li>
+              <li>Stop where the stretch is felt across the lats, not past the shoulder's range.</li>
+              <li>Pull back to the start under control, then repeat.</li>
+            </ol>
+            <figcaption class="cardstub-foot">
+              <span class="langline">Instructions in English · Español · Français · Italiano · Polski · Русский · Türkçe · 中文 · हिन्दी · 한국어</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
 
-      <!-- ── Privacy ──────────────────────────────────────────────────── -->
+      <!-- ── Privacy, as a statement rather than a badge row ────────────── -->
       <section class="section" id="privacy">
         <div class="wrap privacy-grid">
-          <div>
-            <p class="eyebrow">Privacy by architecture</p>
+          <div class="privacy-statement">
             <h2>There is no server to leak your data from</h2>
             <p class="section-sub">
               IronLog is a static site. It has no backend, no database, no analytics script
               and no account system, so there is nothing to breach and nothing to sell.
             </p>
             <p class="body-text">
-              Your workouts live in your browser's local storage under a single versioned
-              key. They are never transmitted — the only network request this page makes is
-              for its own HTML, CSS and JavaScript. Clear your browser's site data and the
-              log goes with it, which is exactly why the export button exists.
+              Your workouts live in your browser's local storage under a single versioned key.
+              They are never transmitted. The only requests this page makes are for its own
+              HTML, CSS, JavaScript and two font files it hosts itself. Clear your browser's
+              site data and the log goes with it, which is exactly why the export button
+              exists.
+            </p>
+            <p class="body-text">
+              The trade-off is worth stating plainly rather than hiding: because storage is
+              per-browser and per-origin, your log does not sync between devices. Export a
+              backup if your history matters to you.
             </p>
           </div>
-          <ul class="privacy-list">
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>
-              <div><strong>No sign-up</strong><span>Nothing to register, verify or remember.</span></div>
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>
-              <div><strong>No tracking</strong><span>No analytics, pixels, cookies or third-party fonts.</span></div>
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>
-              <div><strong>No dependencies at runtime</strong><span>Vanilla ES modules and inline SVG. No CDN calls.</span></div>
-            </li>
-            <li>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12.5 9.5 17.5 19.5 6.5"/></svg>
-              <div><strong>Portable by default</strong><span>One JSON export holds your entire training history.</span></div>
-            </li>
+
+          <ul class="ledger-list">
+            <li><span>No sign-up</span><em>Nothing to register, verify or remember.</em></li>
+            <li><span>No tracking</span><em>No analytics, pixels, cookies or third-party fonts.</em></li>
+            <li><span>No runtime dependencies</span><em>Vanilla ES modules and inline SVG. No CDN calls.</em></li>
+            <li><span>Portable by default</span><em>One JSON export holds your entire training history.</em></li>
+            <li><span>Open source</span><em>MIT licensed, deployed from a public repository.</em></li>
           </ul>
         </div>
       </section>
 
-      <!-- ── FAQ ──────────────────────────────────────────────────────── -->
-      <section class="section section-alt" id="faq">
+      <!-- ── Questions, ruled ──────────────────────────────────────────── -->
+      <section class="section section-paper" id="questions">
         <div class="wrap wrap-narrow">
           <header class="section-head">
-            <p class="eyebrow">Questions</p>
             <h2>Things worth knowing</h2>
           </header>
 
@@ -327,8 +308,8 @@
               <p>
                 The layout is mobile-first with a bottom tab bar and thumb-sized set rows.
                 It ships a web app manifest, so on Android you can add it to your home
-                screen and it opens full-screen. On iOS, Safari's Share → Add to Home Screen
-                does the same.
+                screen and it opens full-screen. On iOS, Safari's Share then Add to Home
+                Screen does the same.
               </p>
             </details>
             <details>
@@ -348,6 +329,15 @@
               </p>
             </details>
             <details>
+              <summary>Where do the exercises and instructions come from?</summary>
+              <p>
+                The catalogue data and instruction text come from the MIT-licensed
+                <code>hasaneyldrm/exercises-dataset</code>, attributed in the app and in the
+                repository. That project's exercise media is separately licensed to Gym
+                Visual and is not redistributed here, so no exercise shows a GIF or video.
+              </p>
+            </details>
+            <details>
               <summary>Where is the source?</summary>
               <p>
                 In the repository this page is deployed from. The app lives under
@@ -359,12 +349,12 @@
         </div>
       </section>
 
-      <!-- ── Final CTA ────────────────────────────────────────────────── -->
+      <!-- ── First step, already open ──────────────────────────────────── -->
       <section class="section final-cta">
         <div class="wrap">
           <h2>Your training log should outlive the app store</h2>
           <p>Start with an empty workout and see how fast the sets add up.</p>
-          <div class="hero-cta">
+          <div class="cta-row">
             <a class="btn btn-primary btn-lg" href="./app/">Open IronLog</a>
             <a class="btn btn-outline btn-lg" href="./app/#/library">Browse the exercise library</a>
           </div>
@@ -372,23 +362,25 @@
       </section>
     </main>
 
+    <!-- ── The back of the object ─────────────────────────────────────── -->
     <footer class="site-foot">
       <div class="wrap foot-inner">
-        <div class="foot-brand">
-          <img src="./assets/img/logo.svg" alt="" width="26" height="26" />
-          <div>
-            <strong>IronLog</strong>
-            <span>An offline-first strength training log.</span>
-          </div>
-        </div>
+        <p class="foot-name">IronLog</p>
+        <p class="foot-line">An offline-first strength training log.</p>
         <nav class="foot-nav" aria-label="Footer">
           <a href="./app/">Open app</a>
-          <a href="#features">Features</a>
+          <a href="#capabilities">Capabilities</a>
+          <a href="#library">Library</a>
           <a href="#privacy">Privacy</a>
-          <a href="#faq">FAQ</a>
+          <a href="#questions">Questions</a>
+          <a href="https://github.com/shogun-support-99/fitness" rel="noopener noreferrer">Source</a>
         </nav>
         <p class="foot-note">
-          Released under the MIT licence. Not affiliated with any other fitness product.
+          Released under the MIT licence. Exercise data from
+          <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener noreferrer">hasaneyldrm/exercises-dataset</a>,
+          MIT licensed, © 2026 Hasan Emir Yıldırım; its media is © Gym Visual and is not
+          redistributed. Type is Geist, self-hosted under the SIL Open Font License.
+          Not affiliated with any other fitness product.
         </p>
       </div>
     </footer>

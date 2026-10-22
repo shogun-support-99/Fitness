@@ -1,23 +1,31 @@
 /**
  * IronLog — landing page behaviour.
  *
- * Deliberately tiny: scroll reveal, count-up proof numbers, and a live clock
- * inside the phone mock. No analytics, no third-party requests.
+ * Deliberately tiny, and deliberately one moment. The craft floor asks for a
+ * single authored motion rather than an identical entrance on every section, so
+ * the only thing that animates on this page is the footer's curtain; sections
+ * are simply there. No analytics, no third-party requests, and every effect
+ * degrades to a fully visible page if this script never runs.
  */
 
-const prefersReducedMotion = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+const prefersReducedMotion =
+  globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+const canObserve = "IntersectionObserver" in globalThis;
 
-/** Fade sections in as they scroll into view. */
-function initReveal() {
-  const targets = document.querySelectorAll(".feature, .step, .privacy-list li, .section-head, .cta-band");
-  if (targets.length === 0) return;
+/**
+ * The footer rises as a curtain.
+ *
+ * The hidden state is applied only once this script has run (via `.js-reveal`
+ * on the document element), so a browser without JS, without
+ * IntersectionObserver, or with reduced motion never loses the content.
+ */
+function initCurtainFooter() {
+  const inner = document.querySelector(".foot-inner");
+  if (!inner) return;
 
-  targets.forEach((el) => el.classList.add("reveal"));
+  if (prefersReducedMotion || !canObserve) return;
 
-  if (prefersReducedMotion || !("IntersectionObserver" in globalThis)) {
-    targets.forEach((el) => el.classList.add("is-visible"));
-    return;
-  }
+  document.documentElement.classList.add("js-reveal");
 
   const observer = new IntersectionObserver(
     (entries) => {
@@ -27,90 +35,31 @@ function initReveal() {
         observer.unobserve(entry.target);
       }
     },
-    { threshold: 0.12, rootMargin: "0px 0px -40px 0px" },
+    { threshold: 0.15, rootMargin: "0px 0px -32px 0px" },
   );
 
-  targets.forEach((el) => observer.observe(el));
+  observer.observe(inner);
 }
 
-/** Count the hero proof numbers up once they are on screen. */
-function initCounters() {
-  const counters = document.querySelectorAll("[data-count]");
-  if (counters.length === 0) return;
-
-  const run = (el) => {
-    const target = Number(el.dataset.target) || 0;
-    if (prefersReducedMotion) {
-      el.textContent = String(target);
-      return;
-    }
-    const duration = 1100;
-    const startedAt = performance.now();
-    const tick = (now) => {
-      const progress = Math.min(1, (now - startedAt) / duration);
-      // Ease-out cubic so the number settles instead of stopping abruptly.
-      const eased = 1 - (1 - progress) ** 3;
-      el.textContent = String(Math.round(target * eased));
-      if (progress < 1) requestAnimationFrame(tick);
-    };
-    requestAnimationFrame(tick);
-  };
-
-  if (!("IntersectionObserver" in globalThis)) {
-    counters.forEach(run);
-    return;
-  }
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        run(entry.target);
-        observer.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.6 },
-  );
-
-  counters.forEach((el) => observer.observe(el));
-}
-
-/**
- * Keep the phone mock honest: show a real running clock rather than a frozen
- * one, so the screenshot-like illustration reflects the live app.
- */
-function initMockClock() {
-  const clock = document.querySelector(".mock-clock");
-  if (!clock) return;
-  const startedAt = Date.now();
-  const render = () => {
-    const total = Math.floor((Date.now() - startedAt) / 1000) + 24 * 60 + 31;
-    const minutes = String(Math.floor(total / 60)).padStart(2, "0");
-    const seconds = String(total % 60).padStart(2, "0");
-    clock.textContent = `${minutes}:${seconds}`;
-  };
-  render();
-  setInterval(render, 1000);
-}
-
-/** Mark the current section in the header nav while scrolling. */
+/** Mark the section the reader is in, in the masthead nav. */
 function initNavSpy() {
-  const links = [...document.querySelectorAll(".head-nav a[href^='#']")];
-  if (links.length === 0 || !("IntersectionObserver" in globalThis)) return;
+  const links = [...document.querySelectorAll(".masthead-nav a[href^='#']")];
+  if (links.length === 0 || !canObserve) return;
 
-  const byId = new Map(
-    links.map((link) => [link.getAttribute("href").slice(1), link]),
-  );
+  const byId = new Map(links.map((link) => [link.getAttribute("href").slice(1), link]));
 
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
         const link = byId.get(entry.target.id);
         if (!link) continue;
-        link.style.color = entry.isIntersecting ? "var(--accent)" : "";
+        // A class rather than an inline colour, so the palette stays in CSS.
+        link.classList.toggle("is-current", entry.isIntersecting);
+        if (entry.isIntersecting) link.setAttribute("aria-current", "true");
+        else link.removeAttribute("aria-current");
       }
     },
-    { threshold: 0.35 },
+    { threshold: 0.28, rootMargin: "-64px 0px -45% 0px" },
   );
 
   for (const id of byId.keys()) {
@@ -119,7 +68,5 @@ function initNavSpy() {
   }
 }
 
-initReveal();
-initCounters();
-initMockClock();
+initCurtainFooter();
 initNavSpy();

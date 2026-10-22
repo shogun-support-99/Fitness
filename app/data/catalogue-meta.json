@@ -18,72 +18,72 @@
     {
       "code": "en",
       "label": "English",
-      "flag": "🇬🇧",
       "exercises": 1316,
-      "bytes": 636235
+      "bytes": 636235,
+      "native": "English"
     },
     {
       "code": "es",
       "label": "Spanish",
-      "flag": "🇪🇸",
       "exercises": 1316,
-      "bytes": 706291
+      "bytes": 706291,
+      "native": "Español"
     },
     {
       "code": "fr",
       "label": "French",
-      "flag": "🇫🇷",
       "exercises": 1316,
-      "bytes": 685120
+      "bytes": 685120,
+      "native": "Français"
     },
     {
       "code": "it",
       "label": "Italian",
-      "flag": "🇮🇹",
       "exercises": 1316,
-      "bytes": 677452
+      "bytes": 677452,
+      "native": "Italiano"
     },
     {
       "code": "pl",
       "label": "Polish",
-      "flag": "🇵🇱",
       "exercises": 1316,
-      "bytes": 602519
+      "bytes": 602519,
+      "native": "Polski"
     },
     {
       "code": "ru",
       "label": "Russian",
-      "flag": "🇷🇺",
       "exercises": 1316,
-      "bytes": 585789
+      "bytes": 585789,
+      "native": "Русский"
     },
     {
       "code": "tr",
       "label": "Turkish",
-      "flag": "🇹🇷",
       "exercises": 1316,
-      "bytes": 653916
+      "bytes": 653916,
+      "native": "Türkçe"
     },
     {
       "code": "zh",
       "label": "Chinese",
-      "flag": "🇨🇳",
       "exercises": 1316,
-      "bytes": 183419
+      "bytes": 183419,
+      "native": "中文"
     },
     {
       "code": "hi",
       "label": "Hindi",
-      "flag": "🇮🇳",
       "exercises": 1316,
-      "bytes": 628136
+      "bytes": 628136,
+      "native": "हिन्दी"
     },
     {
       "code": "ko",
       "label": "Korean",
-      "flag": "🇰🇷",
       "exercises": 1316,
-      "bytes": 283136
+      "bytes": 283136,
+      "native": "한국어"
     }
   ],
   "licensing": {

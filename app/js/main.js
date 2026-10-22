@@ -55,6 +55,22 @@ function currentElapsed() {
   return formatElapsed(Date.now() - new Date(active.startedAt).getTime());
 }
 
+/**
+ * Publish the theme preference to the document.
+ *
+ * This was stored but never applied, so the setting did nothing. "auto" follows
+ * the OS via the media query in the token block; light and dark pin it.
+ */
+function applyTheme() {
+  const theme = store.settings.theme ?? "light";
+  const root = document.documentElement;
+  if (theme === "auto") {
+    root.removeAttribute("data-theme");
+    return;
+  }
+  root.setAttribute("data-theme", theme);
+}
+
 function render(navigation = router.current) {
   const outlet = $("#view-outlet");
   if (!outlet) return;
@@ -417,6 +433,12 @@ const actions = {
   },
 
   // Settings
+  "set-theme": (el) => {
+    store.updateSettings({ theme: el.dataset.theme });
+    applyTheme();
+    render();
+  },
+
   "set-units": (el) => {
     store.updateSettings({ units: el.dataset.units });
     render();
@@ -832,6 +854,7 @@ store.subscribe((event) => {
 // ── Boot ───────────────────────────────────────────────────────────────────
 
 function boot() {
+  applyTheme();
   if (!globalThis.location.hash) globalThis.location.hash = "#/home";
   router.start();
 

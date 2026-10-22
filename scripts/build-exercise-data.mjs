@@ -81,17 +81,16 @@ const BODY_PART_TO_MUSCLE = {
 const MEDIA_FIELDS = ["image", "gif_url", "media_id", "attribution"];
 
 const LANGUAGES = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "es", label: "Spanish", flag: "🇪🇸" },
-  { code: "fr", label: "French", flag: "🇫🇷" },
-  { code: "de", label: "German", flag: "🇩🇪" },
-  { code: "it", label: "Italian", flag: "🇮🇹" },
-  { code: "pl", label: "Polish", flag: "🇵🇱" },
-  { code: "ru", label: "Russian", flag: "🇷🇺" },
-  { code: "tr", label: "Turkish", flag: "🇹🇷" },
-  { code: "zh", label: "Chinese", flag: "🇨🇳" },
-  { code: "hi", label: "Hindi", flag: "🇮🇳" },
-  { code: "ko", label: "Korean", flag: "🇰🇷" },
+  { code: "en", label: "English", native: "English" },
+  { code: "es", label: "Spanish", native: "Español" },
+  { code: "fr", label: "French", native: "Français" },
+  { code: "it", label: "Italian", native: "Italiano" },
+  { code: "pl", label: "Polish", native: "Polski" },
+  { code: "ru", label: "Russian", native: "Русский" },
+  { code: "tr", label: "Turkish", native: "Türkçe" },
+  { code: "zh", label: "Chinese", native: "中文" },
+  { code: "hi", label: "Hindi", native: "हिन्दी" },
+  { code: "ko", label: "Korean", native: "한국어" },
 ];
 
 export function mapMuscle(record) {
@@ -213,7 +212,7 @@ async function main() {
     languagesWritten.push({
       code: lang.code,
       label: lang.label,
-      flag: lang.flag,
+      native: lang.native,
       exercises: ids.length,
       bytes: JSON.stringify(entries).length,
     });
@@ -265,7 +264,7 @@ async function main() {
   console.log(`Duplicate names: ${skipped.dupeName} skipped`);
   console.log(`Media fields   : ${mediaFieldsSeen} stripped, none emitted`);
   console.log(`Languages      : ${languagesWritten.length}`);
-  for (const l of languagesWritten) console.log(`   ${l.flag} ${l.code}  ${l.exercises} exercises  ${kb(l.bytes)}`);
+  for (const l of languagesWritten) console.log(`   ${l.code}  ${l.native.padEnd(10)} ${l.exercises} exercises  ${kb(l.bytes)}`);
   console.log("");
   console.log(`Wrote to ${outDir}`);
 }

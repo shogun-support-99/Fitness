@@ -193,11 +193,36 @@ export async function stepsFor(exerciseOrId, lang = "en", base = "") {
   return { steps: [], language: lang, fellBack: false };
 }
 
+/**
+ * Language names, in English and in the language itself.
+ *
+ * Held here rather than in the generated metadata so the picker does not depend
+ * on a regeneration, and because a flag is not a language: emoji flags are both
+ * an icon system standing on a glyph and wrong for most speakers (Spanish is
+ * not only Spain, English is not only Britain). The native name carries the
+ * choice instead.
+ */
+export const LANGUAGE_NAMES = {
+  en: { label: "English", native: "English" },
+  es: { label: "Spanish", native: "Español" },
+  fr: { label: "French", native: "Français" },
+  it: { label: "Italian", native: "Italiano" },
+  pl: { label: "Polish", native: "Polski" },
+  ru: { label: "Russian", native: "Русский" },
+  tr: { label: "Turkish", native: "Türkçe" },
+  zh: { label: "Chinese", native: "中文" },
+  hi: { label: "Hindi", native: "हिन्दी" },
+  ko: { label: "Korean", native: "한국어" },
+};
+
 /** Languages present in the generated metadata, for the settings picker. */
 export function availableLanguages(meta) {
   const list = meta?.languages;
   if (!Array.isArray(list) || list.length === 0) {
-    return [{ code: "en", label: "English", flag: "🇬🇧" }];
+    return [{ code: "en", ...LANGUAGE_NAMES.en }];
   }
-  return list.map((l) => ({ code: l.code, label: l.label, flag: l.flag ?? "" }));
+  return list.map((l) => {
+    const names = LANGUAGE_NAMES[l.code] ?? { label: l.label ?? l.code, native: l.label ?? l.code };
+    return { code: l.code, label: names.label, native: names.native };
+  });
 }

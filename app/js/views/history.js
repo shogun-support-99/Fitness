@@ -17,7 +17,7 @@ export function renderHistory(store, { openId = null } = {}) {
     return `
       <section class="view view-history">
         <header class="view-head">
-          <div><p class="eyebrow">Log</p><h1>History</h1></div>
+          <div><h1>History</h1></div>
         </header>
         ${emptyState({
           icon: "history",

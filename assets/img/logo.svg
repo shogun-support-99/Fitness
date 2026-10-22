@@ -1,12 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IronLog">
-  <rect width="64" height="64" rx="15" fill="#0a0c0f"/>
-  <rect x="1.5" y="1.5" width="61" height="61" rx="13.5" fill="none" stroke="#232d3b" stroke-width="3"/>
-  <g stroke="#c6f24e" stroke-width="5" stroke-linecap="round" fill="none">
-    <path d="M15 25v14"/>
-    <path d="M22 18v28"/>
-    <path d="M42 18v28"/>
-    <path d="M49 25v14"/>
-    <path d="M22 32h20"/>
+  <!--
+    The mark is the object: a barbell drawn as ledger geometry, ink on stone
+    paper, with the one blue on the collar — the same rule the interface
+    follows, where the single hue goes on the data and nowhere else.
+    No filled tile, no letter in a square.
+  -->
+  <rect width="64" height="64" rx="8" fill="#f7f6f3"/>
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="7.25" fill="none" stroke="#d9d7d0" stroke-width="1.5"/>
+
+  <!-- Plates and bar, in ink. -->
+  <g stroke="#0f0f0f" stroke-width="4.5" stroke-linecap="round" fill="none">
+    <path d="M16 26v12"/>
+    <path d="M23 19v26"/>
+    <path d="M41 19v26"/>
+    <path d="M48 26v12"/>
   </g>
-  <circle cx="32" cy="32" r="3.4" fill="#0a0c0f" stroke="#6cc4ff" stroke-width="2.6"/>
+  <path d="M23 32h18" stroke="#0f0f0f" stroke-width="4.5" stroke-linecap="round"/>
+
+  <!-- The collar: the one hue, on the piece that holds the load. -->
+  <rect x="29" y="27.5" width="6" height="9" rx="1.5" fill="#1d5fbf"/>
 </svg>

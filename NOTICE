@@ -44,6 +44,25 @@ so a future regeneration cannot silently reintroduce media.
 No exercise in IronLog displays an image, GIF or video. Exercises are presented
 as text plus taxonomy.
 
+## Type — SIL Open Font License 1.1
+
+Both faces are self-hosted from `fonts/` so that the site makes no request to
+any third party, including for its type:
+
+    Typeface   : Geist and Geist Mono (variable)
+    Source     : https://www.npmjs.com/package/geist
+    Licence    : SIL Open Font License, Version 1.1
+    Copyright  : Copyright (c) 2023 Vercel, in collaboration with basement.studio
+
+The full licence text ships alongside the font files at `fonts/OFL-Geist.txt`.
+Files: `fonts/Geist-Variable.woff2`, `fonts/GeistMono-Variable.woff2`.
+
+The OFL permits bundling and redistribution with software, requires the
+copyright and licence notices to remain with the font files, and forbids selling
+the fonts on their own or releasing derivatives under a different name. None of
+those conditions are infringed here: the notices are retained in this file and
+in `fonts/OFL-Geist.txt`, the fonts are not sold, and they are unmodified.
+
 ## Agent skills used during development — not redistributed
 
 Two AI agent skill packs were installed in the maintainer's local agent
@@ -53,6 +72,10 @@ and have no effect on the licence of the app:
 
     impeccable            — https://github.com/pbakaus/impeccable   (Apache-2.0)
     design-taste-frontend — https://github.com/Leonxlnx/taste-skill (MIT, © 2026 Leonxlnx)
+
+The visual design of this project was produced by applying the design guidance
+in those packs. All HTML, CSS, JavaScript and SVG in this repository is
+original work; no content was copied from either pack.
 
 ## Everything else
 
