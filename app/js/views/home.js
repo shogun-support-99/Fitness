@@ -5,7 +5,7 @@
  * numbers, and the most recent workouts.
  */
 
-import { compactNumber, relativeTime, streaks, workoutDurationMinutes, workoutSetCount, workoutVolume } from "../stats.js";
+import { compactNumber, personalRecords, relativeTime, streaks, workoutDurationMinutes, workoutSetCount, workoutVolume } from "../stats.js";
 import { emptyState, esc, icon, muscleBadge, statTile } from "../ui.js";
 
 export function renderHome(store) {
@@ -25,10 +25,12 @@ export function renderHome(store) {
     <section class="view view-home">
       <header class="view-head">
         <div>
-          <p class="eyebrow">${esc(homeSubline(streak, completed))}</p>
           <h1>Today</h1>
+          <p class="view-subline">${esc(homeSubline(streak, completed))}</p>
         </div>
       </header>
+
+      ${renderTicker(store, completed)}
 
       ${active ? renderActiveBanner(active, index) : renderStartPanel(store, completed)}
 
@@ -54,6 +56,78 @@ export function renderHome(store) {
         }
       </section>
     </section>`;
+}
+
+/**
+ * A moving strip along the top of Home.
+ *
+ * Honesty first: it shows the user's OWN records and sessions when they have
+ * any, because a strip of someone else's numbers on a personal log is decoration
+ * pretending to be data. Only when the log is genuinely empty does it fall back
+ * to library content, and then it says so in the strip's own label.
+ *
+ * motion.js clones the track for a seamless loop, pauses it on hover, on focus
+ * within and when the tab is hidden, and never starts it under reduced motion.
+ */
+function renderTicker(store, completed) {
+  const items = [];
+
+  // The user's real records, best estimated 1RM first.
+  //
+  // personalRecords() returns a Map and resolves names through the exercise
+  // index; without that second argument every record's name would be a raw id
+  // like "ds-0289" on the strip.
+  const recordsMap = personalRecords(completed, store.exerciseIndex());
+  const records = [...recordsMap.values()].sort(
+    (a, b) => (b.maxOneRm ?? 0) - (a.maxOneRm ?? 0),
+  );
+  for (const r of records.slice(0, 6)) {
+    items.push({
+      label: r.name,
+      value: `${compactNumber(r.maxWeight)} ${store.settings.units}`,
+      note: `est. 1RM ${compactNumber(r.maxOneRm)}`,
+    });
+  }
+
+  // Then the most recent sessions.
+  for (const w of completed.slice(0, 4)) {
+    const sets = workoutSetCount(w);
+    const volume = workoutVolume(w);
+    items.push({
+      label: w.name ?? "Session",
+      // The unit comes from settings rather than a hardcoded "kg", because the
+      // rest of the app honours that preference and this strip must agree.
+      value: `${compactNumber(volume)} ${store.settings.units}`,
+      note: `${sets} set${sets === 1 ? "" : "s"}`,
+    });
+  }
+
+  const fromLibrary = items.length === 0;
+  if (fromLibrary) {
+    // Nothing logged yet, so show what the library holds - labelled as such.
+    for (const e of store.exercises().slice(0, 8)) {
+      items.push({ label: e.name, value: e.muscle ?? "", note: e.equipment ?? "" });
+    }
+  }
+
+  if (items.length === 0) return "";
+
+  const track = items
+    .map(
+      (it) => `<span class="ticker-item">
+        ${it.value ? `<b>${esc(it.value)}</b>` : ""}
+        ${esc(it.label)}${it.note ? `<i>${esc(it.note)}</i>` : ""}
+      </span>`,
+    )
+    .join("");
+
+  return `
+    <div class="ticker" data-ticker aria-label="${esc(fromLibrary ? "Exercises in the library" : "Your records and recent sessions")}">
+      <span class="ticker-caption">${esc(fromLibrary ? "In the library" : "Your log")}</span>
+      <div class="ticker-viewport">
+        <div class="ticker-track" data-ticker-track>${track}</div>
+      </div>
+    </div>`;
 }
 
 function renderActiveBanner(workout, index) {

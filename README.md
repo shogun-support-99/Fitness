@@ -140,6 +140,7 @@ failure, and timer completion semantics.
 │   ├── check-links.mjs            # CI check: every local link resolves
 │   └── setup-github.sh            # One-shot repo/profile makeover
 ├── fonts/                     # Self-hosted Geist + Geist Mono (SIL OFL) and their licence
+├── app/media/                 # Empty by design: slot for media YOU hold rights to
 ├── NOTICE                     # Third-party attribution: data, media exclusion, type
 ├── tests/                     # Node test-runner suites
 └── .github/workflows/deploy.yml
@@ -227,6 +228,75 @@ makes no request to any third party — including for its type. See [`NOTICE`](.
 
 The app ships three appearances: light (the crafted default), dark (true neutral greys,
 not navy or slate), and match-system.
+
+## Motion
+
+Animation is authored per element rather than applied uniformly. The rule this
+follows is that scattered, identical effects read as a template, so every
+element gets the entrance that belongs to what it *is*:
+
+| Element | Motion |
+| --- | --- |
+| A log row | written in — a clip-path wipe, left to right |
+| A heading | rises a few pixels, blur resolving |
+| A chart bar | grows from the baseline, staggered |
+| A personal record | **stamped** — overshoot and rotation, with twelve rays of linework |
+| SVG linework | draws itself via `stroke-dashoffset` |
+| A figure | rolls like an odometer, thousands separator intact |
+| The rest timer | a rule that drains, shifting hue in its last fifth |
+| A completed set | the tick draws its own check |
+| Route changes | asymmetric — 150 ms out, 260 ms in, so navigation never waits on animation |
+
+On the landing page the hero artefact is the authored moment: **the log sheet
+writes itself**. Rows cascade in reading order, ticks draw, the PR mark stamps,
+and the totals roll last — because on a real sheet the total is written after the
+sets, not before. The sheet also tilts to the cursor, under 5°, and only on
+pointer devices.
+
+Three rules hold everywhere:
+
+1. **Motion starts from an already-legible default** and settles into place.
+   Nothing fades up from `opacity: 0`.
+2. **Only `transform`, `opacity`, `clip-path`, `filter` and `stroke-dashoffset`
+   are animated.** No `width`, `height`, `top` or `left` — those relayout every
+   frame.
+3. **`prefers-reduced-motion` removes all of it and leaves the final state.**
+   That includes resetting `animation-delay`, because a 1.2 s delay with a
+   0.01 ms duration would otherwise hold content invisible for over a second.
+   Loops are stopped outright, not merely sped up.
+
+`app/js/motion.js` also declines to start observers, loops and the tilt under
+reduced motion, and disconnects every observer before a re-render so a session
+left open for an hour does not accumulate leaks on detached nodes.
+
+## Exercise visuals, and why there are no GIFs
+
+The upstream dataset ships 180×180 animation GIFs, but its licence carries a
+**MEDIA EXCEPTION** removing them from the MIT grant: they are © Gym Visual,
+included with the rights holder's written permission, and *"cloning this
+repository does not grant you any license to the media."* IronLog therefore ships
+none of them. They are also 138 MB against an application that is under 1 MB.
+
+`app/js/diagrams.js` draws originals instead, from the dataset's own
+MIT-licensed fields:
+
+- **Movement diagram** — a lever, an arc, a travel path and a force vector. Ten
+  movement classes (press, pull, hinge, squat, curl, extend, core, carry, cardio,
+  generic) are derived from `category`, `muscle`, `muscleGroup`, `target`,
+  `equipment` and `name`, and the load is drawn to match the equipment: plates on
+  a barbell, heads on a dumbbell, a handle on a kettlebell. The load rides the
+  same path the travel line draws, so the two can never disagree.
+- **Muscle graph** — the primary muscle at the centre, secondaries ranged on an
+  ellipse, joined by linework that draws in one after another.
+
+Neither is a picture of a person. That is deliberate: figure-bearing illustration
+reads as amateur, while crisp vector geometry and animated linework are
+first-class media — and geometry is also themeable, resolution-independent and a
+few hundred bytes. Across all 1,388 exercises, 99.4% classify into a specific
+movement and 0.6% fall back to the neutral diagram.
+
+If you hold rights to media you want to show, `app/media/README.md` explains the
+slot that accepts it, with the required attribution already wired.
 
 ## Architecture notes
 

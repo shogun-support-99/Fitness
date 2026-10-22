@@ -85,6 +85,7 @@
       <main class="main" id="view-outlet" tabindex="-1"></main>
 
       <nav class="tabbar" aria-label="Primary mobile">
+        <span class="tabbar-indicator" aria-hidden="true"></span>
         <a class="nav-item" data-route="home" href="#/home">Home</a>
         <a class="nav-item" data-route="workout" href="#/workout">Log</a>
         <a class="nav-item" data-route="history" href="#/history">History</a>
@@ -94,5 +95,13 @@
     </div>
 
     <div id="toast-host" aria-live="polite"></div>
+
+    <!--
+      Celebration announcer. The stamp and ray burst in motion.js are visual;
+      this is the same event for assistive tech. Polite, not assertive: a new
+      personal record is worth interrupting a rest timer for, not worth
+      interrupting a screen reader mid-word.
+    -->
+    <div id="ironlog-live" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
   </body>
 </html>

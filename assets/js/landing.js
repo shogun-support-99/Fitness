@@ -1,16 +1,216 @@
 /**
  * IronLog — landing page behaviour.
  *
- * Deliberately tiny, and deliberately one moment. The craft floor asks for a
- * single authored motion rather than an identical entrance on every section, so
- * the only thing that animates on this page is the footer's curtain; sections
- * are simply there. No analytics, no third-party requests, and every effect
- * degrades to a fully visible page if this script never runs.
+ * The page's authored moment is the hero log sheet writing itself: rows wiped in
+ * down the page, ticks drawing their own checks, the PR mark stamped, totals
+ * rolled last. That is all in CSS, keyed off markup, so it runs whether or not
+ * this script loads.
+ *
+ * What lives here is the part CSS cannot do on its own:
+ *   - reveals that need to fire on SCROLL rather than on load
+ *   - counters that roll to a real value once they are in view
+ *   - the cursor tilt on the hero sheet, and its opt-outs
+ *   - the footer curtain and the masthead nav spy
+ *
+ * Every effect degrades to a fully visible, fully correct page if this script
+ * never runs: the animated state is the DEFAULT and the keyframes run from an
+ * offset, so no content is ever hidden waiting on JS. No analytics, no
+ * third-party requests, nothing that phones home.
  */
 
-const prefersReducedMotion =
-  globalThis.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+const motionQuery = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
+const prefersReducedMotion = () => Boolean(motionQuery?.matches);
 const canObserve = "IntersectionObserver" in globalThis;
+/** Touch devices get no tilt and no hover-dependent motion. */
+const hasHover = globalThis.matchMedia?.("(hover: hover)").matches ?? false;
+
+/* ------------------------------------------------------------------------- *
+ * Scroll reveals
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Assign each reveal a variant by ROLE so the page never repeats one identical
+ * entrance down its length: headings rise, rows are written, rules draw, marks
+ * stamp. Deterministic from the element's own tag and classes.
+ */
+function revealVariant(el) {
+  const explicit = el.getAttribute("data-reveal");
+  if (explicit && explicit !== "auto") return explicit;
+  const cls = String(el.className || "");
+  const tag = el.tagName.toLowerCase();
+  if (/record-mark|pr-|stamp/.test(cls)) return "stamp";
+  if (/menu|ledger-list|faq|library-grid|cardstub/.test(cls)) return "write";
+  if (/logsheet-foot|rule|leader/.test(cls)) return "rule";
+  if (/^h[1-6]$/.test(tag) || /lede|proof-line/.test(cls)) return "rise";
+  return "write";
+}
+
+/**
+ * Reveal on scroll. Without JS, without IntersectionObserver, or under reduced
+ * motion, every element is simply left in its final state and nothing is
+ * observed - the CSS defaults are already the visible ones.
+ */
+function initReveals() {
+  const els = [...document.querySelectorAll("[data-reveal]")];
+  if (els.length === 0) return;
+
+  if (prefersReducedMotion() || !canObserve) {
+    for (const el of els) el.classList.add("is-revealed");
+    return;
+  }
+
+  for (const el of els) el.setAttribute("data-reveal", revealVariant(el));
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      // Stagger by order of appearance in this batch, not by DOM index, so a
+      // long list never leaves its last item waiting seconds.
+      const batch = entries.filter((e) => e.isIntersecting);
+      batch.forEach((entry, i) => {
+        entry.target.style.setProperty("--reveal-delay", `${i * 70}ms`);
+        entry.target.classList.add("is-revealed");
+        observer.unobserve(entry.target);
+      });
+    },
+    { threshold: 0.1, rootMargin: "0px 0px -6% 0px" },
+  );
+
+  for (const el of els) observer.observe(el);
+}
+
+/* ------------------------------------------------------------------------- *
+ * Counters
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Roll the digits of a figure to its real value.
+ *
+ * Only ever called on elements carrying data-count-to, and the true value is
+ * already in the markup, so this can only ever animate toward a number the page
+ * was already telling the truth about. Tabular mono makes the columns line up
+ * while the digits move.
+ */
+/**
+ * Format a count the way the page already writes it, thousands separators
+ * included. Without this, rolling data-count-to="1388" would replace the
+ * markup's "1,388" with "1388" - a real regression hiding inside an animation.
+ */
+function formatCount(value, decimals) {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    }).format(Number(value));
+  } catch {
+    return Number(value).toFixed(decimals);
+  }
+}
+
+function odometerMarkup(value, decimals) {
+  return formatCount(value, decimals)
+    .split("")
+    .map((ch) => {
+      if (!/[0-9]/.test(ch)) return `<span class="odo-static">${ch}</span>`;
+      const strip = Array.from({ length: 10 }, (_, d) => `<i>${d}</i>`).join("");
+      return `<span class="odo-digit"><span class="odo-strip" style="--to:${ch}">${strip}</span></span>`;
+    })
+    .join("");
+}
+
+function initCounters() {
+  const els = [...document.querySelectorAll("[data-count-to]")];
+  if (els.length === 0) return;
+
+  const settle = (el) => {
+    const to = Number(el.getAttribute("data-count-to"));
+    const decimals = Number(el.getAttribute("data-count-decimals")) || 0;
+    if (!Number.isFinite(to)) return;
+    const text = formatCount(to, decimals);
+    el.setAttribute("data-value", text);
+    if (prefersReducedMotion()) {
+      el.textContent = text;
+      return;
+    }
+    el.innerHTML = odometerMarkup(to, decimals);
+    void el.offsetWidth; // flush so the transition runs from the 0 position
+    el.classList.add("is-rolled");
+  };
+
+  if (prefersReducedMotion() || !canObserve) {
+    for (const el of els) settle(el);
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        settle(entry.target);
+        observer.unobserve(entry.target);
+      }
+    },
+    { threshold: 0.5 },
+  );
+
+  for (const el of els) observer.observe(el);
+}
+
+/* ------------------------------------------------------------------------- *
+ * Cursor tilt on the hero sheet
+ * ------------------------------------------------------------------------- */
+
+/**
+ * The one object on the page that answers the cursor.
+ *
+ * Kept under 5deg, rAF-throttled, and disabled on touch, under reduced motion,
+ * and when the sheet has scrolled out of view - a transform running on an
+ * offscreen element is wasted work on a laptop battery.
+ */
+function initTilt() {
+  const sheet = document.querySelector("[data-tilt]");
+  if (!sheet) return;
+  if (prefersReducedMotion() || !hasHover) return;
+
+  const MAX = 4.2;
+  let frame = 0;
+  let inView = true;
+
+  const onMove = (event) => {
+    if (!inView) return;
+    const rect = sheet.getBoundingClientRect();
+    const px = (event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;
+    const py = (event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5;
+    if (frame) cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      sheet.style.setProperty("--tilt-x", `${(-py * MAX).toFixed(2)}deg`);
+      sheet.style.setProperty("--tilt-y", `${(px * MAX).toFixed(2)}deg`);
+    });
+  };
+
+  const onLeave = () => {
+    if (frame) cancelAnimationFrame(frame);
+    sheet.style.setProperty("--tilt-x", "0deg");
+    sheet.style.setProperty("--tilt-y", "0deg");
+  };
+
+  sheet.addEventListener("pointermove", onMove, { passive: true });
+  sheet.addEventListener("pointerleave", onLeave, { passive: true });
+
+  if (canObserve) {
+    const io = new IntersectionObserver(
+      (entries) => {
+        inView = entries.some((e) => e.isIntersecting);
+        if (!inView) onLeave();
+      },
+      { threshold: 0.05 },
+    );
+    io.observe(sheet);
+  }
+}
+
+/* ------------------------------------------------------------------------- *
+ * Footer curtain
+ * ------------------------------------------------------------------------- */
 
 /**
  * The footer rises as a curtain.
@@ -23,7 +223,7 @@ function initCurtainFooter() {
   const inner = document.querySelector(".foot-inner");
   if (!inner) return;
 
-  if (prefersReducedMotion || !canObserve) return;
+  if (prefersReducedMotion() || !canObserve) return;
 
   document.documentElement.classList.add("js-reveal");
 
@@ -40,6 +240,10 @@ function initCurtainFooter() {
 
   observer.observe(inner);
 }
+
+/* ------------------------------------------------------------------------- *
+ * Nav spy
+ * ------------------------------------------------------------------------- */
 
 /** Mark the section the reader is in, in the masthead nav. */
 function initNavSpy() {
@@ -68,5 +272,19 @@ function initNavSpy() {
   }
 }
 
+/* ------------------------------------------------------------------------- *
+ * Menu leaders
+ * ------------------------------------------------------------------------- */
+
+/** Index the capabilities menu so its leaders draw one after another. */
+function initMenuIndex() {
+  const items = document.querySelectorAll(".menu dt, .menu dd");
+  items.forEach((el, i) => el.style.setProperty("--i", String(Math.floor(i / 2))));
+}
+
+initMenuIndex();
+initReveals();
+initCounters();
+initTilt();
 initCurtainFooter();
 initNavSpy();

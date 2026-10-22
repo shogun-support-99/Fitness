@@ -1198,6 +1198,313 @@ tr.is-done .tick::after {
   }
 }
 
+/* ── Motion ──────────────────────────────────────────────────────────────
+   The hero's authored moment: the log sheet WRITES ITSELF. Rows are wiped in
+   down the page in reading order, each tick draws its own check, the PR mark
+   stamps, and the totals roll last - because on a real sheet the total is what
+   you write after the sets, not before.
+
+   Everything here starts from an already-legible default and settles into
+   place. Nothing fades up from opacity 0: that is the entrance that makes a
+   page feel assembled rather than built.
+
+   Animation is confined to transform, opacity, clip-path, filter and
+   stroke-dashoffset. No width, height, top or left - those relayout every
+   frame, and this sheet has 10 rows and two tables in it. */
+
+:root {
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* ── The sheet writes itself ────────────────────────────────────────────── */
+
+/* Cursor tilt. Under 5deg, on the one hero artefact only: a whole page that
+   tilts is seasick, but a single object that answers the cursor feels held in
+   the hand. landing.js disables it on touch and under reduced motion. */
+.logsheet[data-tilt] {
+  transform: perspective(1200px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 600ms var(--ease-out-soft);
+  will-change: transform;
+}
+
+/* The sheet arrives as a whole before its contents are written: a short drop
+   with a touch of blur resolving, so it lands like paper rather than sliding in
+   like a modal. */
+[data-sheet-write] {
+  animation: sheet-arrive 700ms var(--ease-expo) both;
+}
+
+@keyframes sheet-arrive {
+  from {
+    opacity: 0.4;
+    transform: perspective(1200px) translate3d(0, 26px, 0) scale(0.985);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(1200px) translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Rows are written in, one after another, left to right. --row is set in the
+   markup so the cascade follows reading order without JS measuring anything. */
+[data-sheet-write] tr {
+  animation: row-write 460ms var(--ease-expo) both;
+  animation-delay: calc(420ms + var(--row, 0) * 78ms);
+}
+
+@keyframes row-write {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.35;
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+}
+
+/* The header and footer of the sheet are ruled on first, before any row, so
+   the sheet reads as a form being filled rather than a table appearing. */
+[data-sheet-write] .logsheet-head {
+  animation: rule-draw 520ms var(--ease-expo) 120ms both;
+}
+
+[data-sheet-write] .logblock-head {
+  animation: rule-draw 460ms var(--ease-expo) both;
+  animation-delay: calc(340ms + var(--row, 0) * 78ms);
+}
+
+@keyframes rule-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* The tick draws its own check: a dash that runs the length of the mark. This
+   is the same gesture the app makes when you complete a set, which is the point
+   - the landing page is the app's own artefact, not a picture of it. */
+[data-sheet-write] tr.is-done .tick::after {
+  animation: tick-draw 320ms var(--ease-expo) both;
+  animation-delay: calc(620ms + var(--row, 0) * 78ms);
+}
+
+@keyframes tick-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+    transform: rotate(-40deg) scale(0.6);
+  }
+  60% {
+    transform: rotate(4deg) scale(1.06);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+/* The PR mark is stamped: overshoot, slight rotation, blur resolving. It lands
+   after its own row is written, and it is the only element on the sheet that
+   overshoots, so it reads as the one thing worth noticing. */
+[data-sheet-write] .record-mark {
+  animation: pr-stamp 520ms var(--ease-spring) both;
+  animation-delay: calc(760ms + var(--row, 0) * 78ms);
+}
+
+@keyframes pr-stamp {
+  0% {
+    opacity: 0;
+    transform: scale(2.1) rotate(-11deg);
+    filter: blur(3px);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.93) rotate(2deg);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Totals last, because that is the order a real sheet is written in. */
+[data-sheet-write] tfoot tr {
+  animation: total-in 520ms var(--ease-expo) both;
+  animation-delay: calc(1180ms + var(--row, 0) * 78ms);
+}
+
+@keyframes total-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 5px, 0);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+/* The rest rule drains once, on load, then holds. A looping drain on a static
+   page would be a lie about a timer that is not running. */
+[data-sheet-write] .logsheet-rest .rest-fill,
+[data-sheet-write] .rest-fill {
+  animation: rest-drain 2200ms var(--ease-out-soft) 900ms both;
+  transform-origin: left center;
+}
+
+@keyframes rest-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(var(--rest-end, 0.32));
+  }
+}
+
+/* ── Scroll reveals ───────────────────────────────────────────────────────
+   Variants by ROLE, never one identical entrance down the page. landing.js
+   assigns these from data-reveal; without JS nothing is hidden, because the
+   animated state is the default and the keyframes run FROM an offset. */
+
+[data-reveal] {
+  animation-duration: 620ms;
+  animation-timing-function: var(--ease-expo);
+  animation-fill-mode: both;
+}
+
+[data-reveal="write"] {
+  animation-name: reveal-write;
+}
+[data-reveal="rise"] {
+  animation-name: reveal-rise;
+  animation-duration: 480ms;
+}
+[data-reveal="rule"] {
+  animation-name: rule-draw;
+  animation-duration: 700ms;
+}
+[data-reveal="stamp"] {
+  animation-name: pr-stamp;
+  animation-timing-function: var(--ease-spring);
+}
+
+@keyframes reveal-write {
+  from {
+    clip-path: inset(0 100% 0 0);
+    opacity: 0.4;
+    transform: translate3d(-6px, 0, 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes reveal-rise {
+  from {
+    opacity: 0.35;
+    transform: translate3d(0, 12px, 0);
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+/* The menu's dotted leaders draw across, one after another. A leader is a rule
+   with a job - connecting a name to a number - so it is drawn, not typed. */
+.menu dd,
+.menu dt {
+  animation: reveal-write 540ms var(--ease-expo) both;
+  animation-delay: calc(var(--i, 0) * 62ms);
+}
+
+/* ── Counters ─────────────────────────────────────────────────────────────
+   Only for figures that are true counts. landing.js reads data-count-to and
+   rolls the digits; the real value is in the markup from the start, so a
+   failed animation leaves a correct number rather than a zero. */
+
+[data-count-to] {
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  min-width: 4ch;
+}
+
+.odo-digit {
+  display: inline-block;
+  position: relative;
+  overflow: hidden;
+  height: 1em;
+  line-height: 1em;
+  vertical-align: bottom;
+}
+
+.odo-strip {
+  display: flex;
+  flex-direction: column;
+  transform: translate3d(0, calc(var(--to, 0) * -1em), 0);
+  transition: transform 820ms var(--ease-expo);
+}
+
+.odo-strip i {
+  font-style: normal;
+  height: 1em;
+  line-height: 1em;
+}
+
+/* ── Pointer feedback ───────────────────────────────────────────────────── */
+
+.btn,
+.masthead-nav a,
+.faq summary {
+  transition:
+    transform 160ms var(--ease-spring),
+    background-color 180ms var(--ease-out-soft),
+    color 180ms var(--ease-out-soft),
+    border-color 180ms var(--ease-out-soft);
+}
+
+.btn:active {
+  transform: scale(0.975);
+  transition-duration: 70ms;
+}
+
+/* The nav's current-page mark slides rather than jumping. */
+.masthead-nav a::after {
+  transition: transform 320ms var(--ease-expo), opacity 320ms var(--ease-expo);
+}
+
+/* An FAQ answer unrolls instead of snapping open. */
+.faq details[open] .faq-body {
+  animation: faq-unroll 340ms var(--ease-expo) both;
+}
+
+@keyframes faq-unroll {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translate3d(0, -4px, 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -1208,11 +1515,63 @@ tr.is-done .tick::after {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    /* The delay matters as much as the duration. Every entrance above is
+       fill-mode: both, so a 1180ms delay with a 0.01ms duration would hold the
+       row at its clipped, 35%-opacity "from" state for over a second before it
+       snapped in. Killing the delay is what makes reduced motion actually
+       reduce motion instead of just shortening it. */
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 
-  .btn-primary:hover {
+  /* Final states applied directly, so nothing depends on a keyframe running.
+     The write-in rows are clipped at inset(0 100% 0 0) in their "from" state;
+     this guarantees the sheet is fully legible with no animation at all. */
+  [data-sheet-write] tr,
+  [data-sheet-write] .logsheet-head,
+  [data-sheet-write] .logblock-head,
+  [data-reveal],
+  .menu dd,
+  .menu dt {
+    clip-path: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  [data-sheet-write] tr.is-done .tick::after {
+    clip-path: none !important;
+    transform: none !important;
+  }
+
+  [data-sheet-write] .record-mark {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* The rest rule holds at its stated value rather than draining. */
+  .rest-fill {
+    transform: scaleX(var(--rest-end, 0.32)) !important;
+    animation: none !important;
+  }
+
+  /* No cursor tilt: it is pure decoration and it is the one transform here that
+     could make text swim under a magnifier. */
+  .logsheet[data-tilt] {
+    transform: none !important;
+  }
+
+  .btn-primary:hover,
+  .btn:active {
     transform: none;
+  }
+
+  .faq details[open] .faq-body {
+    animation: none !important;
+    clip-path: none !important;
+    opacity: 1 !important;
   }
 }
 

@@ -85,8 +85,12 @@ function renderTimerBar(timer) {
   const mm = String(Math.floor(left / 60)).padStart(2, "0");
   const ss = String(left % 60).padStart(2, "0");
   const pct = Math.round((timer.progress ?? 0) * 100);
+  // "Urgent" is the last fifth of the rest. Deriving it here keeps the view the
+  // only place that knows what the numbers mean; CSS just responds to the flag.
+  const urgent = pct <= 20 ? "1" : "0";
+
   return `
-    <div class="timer-bar" role="timer" aria-live="polite">
+    <div class="timer-bar" role="timer" aria-live="polite" data-urgent="${urgent}" style="--timer-pct:${pct}">
       <span class="timer-icon">${icon("timer")}</span>
       <span class="timer-track"><span class="timer-fill" style="width:${pct}%"></span></span>
       <span class="timer-read" data-role="timer-read">${mm}:${ss}</span>
