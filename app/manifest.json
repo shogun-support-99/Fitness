@@ -6,9 +6,13 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#0a0c0f",
-  "theme_color": "#0a0c0f",
-  "categories": ["health", "fitness", "sports"],
+  "background_color": "#f4f3f1",
+  "theme_color": "#f4f3f1",
+  "categories": [
+    "health",
+    "fitness",
+    "sports"
+  ],
   "icons": [
     {
       "src": "../assets/img/logo.svg",

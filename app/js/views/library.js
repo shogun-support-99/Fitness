@@ -201,7 +201,7 @@ function renderInstructions(exercise, { languages, currentLang, stepsResult, ste
                  ${languages
                    .map(
                      (l) =>
-                       `<option value="${esc(l.code)}" ${l.code === showing ? "selected" : ""}>${esc(l.flag)} ${esc(l.label)}</option>`,
+                       `<option value="${esc(l.code)}" ${l.code === showing ? "selected" : ""}>${esc(l.native === l.label ? l.label : `${l.label} — ${l.native}`)}</option>`,
                    )
                    .join("")}
                </select>

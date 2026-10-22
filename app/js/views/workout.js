@@ -20,7 +20,7 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
     return `
       <section class="view view-workout">
         <header class="view-head">
-          <div><p class="eyebrow">Logger</p><h1>No active workout</h1></div>
+          <div><h1>No active workout</h1></div>
         </header>
         ${emptyState({
           icon: "dumbbell",

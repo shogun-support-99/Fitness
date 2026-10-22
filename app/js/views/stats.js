@@ -21,7 +21,7 @@ export function renderStats(store) {
     return `
       <section class="view view-stats">
         <header class="view-head">
-          <div><p class="eyebrow">Progress</p><h1>Stats</h1></div>
+          <div><h1>Stats</h1></div>
         </header>
         ${emptyState({
           icon: "stats",

@@ -360,15 +360,31 @@ describe("stepsFor", () => {
 });
 
 describe("availableLanguages", () => {
-  test("reads the language list from generated metadata", () => {
-    const langs = availableLanguages({ languages: [{ code: "en", label: "English", flag: "🇬🇧" }, { code: "hi", label: "Hindi" }] });
+  test("names each language in English and in its own words", () => {
+    const langs = availableLanguages({ languages: [{ code: "en" }, { code: "hi" }] });
     assert.equal(langs.length, 2);
-    assert.equal(langs[1].flag, "");
+    assert.deepEqual(langs[1], { code: "hi", label: "Hindi", native: "\u0939\u093f\u0928\u094d\u0926\u0940" });
   });
 
   test("defaults to English when metadata is absent", () => {
-    assert.deepEqual(availableLanguages(null), [{ code: "en", label: "English", flag: "🇬🇧" }]);
+    assert.deepEqual(availableLanguages(null), [{ code: "en", label: "English", native: "English" }]);
     assert.equal(availableLanguages({ languages: [] }).length, 1);
+  });
+
+  test("survives an unknown language code without inventing a name", () => {
+    const langs = availableLanguages({ languages: [{ code: "xx", label: "Unknown" }] });
+    assert.deepEqual(langs[0], { code: "xx", label: "Unknown", native: "Unknown" });
+  });
+
+  test("no language entry relies on an emoji flag", () => {
+    // Emoji standing in for an icon system is off the craft floor, and a flag
+    // is not a language anyway.
+    const langs = availableLanguages({ languages: [{ code: "en" }, { code: "es" }, { code: "zh" }] });
+    for (const l of langs) {
+      assert.equal(l.flag, undefined);
+      assert.ok(l.native.length > 0);
+      assert.doesNotMatch(l.native, /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
+    }
   });
 });
 

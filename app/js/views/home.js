@@ -25,10 +25,9 @@ export function renderHome(store) {
     <section class="view view-home">
       <header class="view-head">
         <div>
-          <p class="eyebrow">${esc(greeting())}</p>
-          <h1>${streak.current > 0 ? `${streak.current}-day streak` : "Ready when you are"}</h1>
+          <p class="eyebrow">${esc(homeSubline(streak, completed))}</p>
+          <h1>Today</h1>
         </div>
-        ${streak.current > 0 ? `<span class="streak-flame">${icon("flame")}</span>` : ""}
       </header>
 
       ${active ? renderActiveBanner(active, index) : renderStartPanel(store, completed)}
@@ -99,7 +98,7 @@ function renderStartPanel(store, completed) {
       }
 
       <div class="quick-starts">
-        <p class="eyebrow">Or start from a split</p>
+        <p class="group-label">Or start from a split</p>
         <div class="chip-row">
           ${quickStarts
             .map(
@@ -148,9 +147,28 @@ function formatDay(iso) {
   return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-function greeting(date = new Date()) {
-  const h = date.getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
+/**
+ * The line under the title: the day, then where the training stands, in the
+ * words a lifter would use. streaks() returns only current/best/activeDays, so
+ * the gap since the last session is computed here from the log itself.
+ */
+function homeSubline(streak, completed, date = new Date()) {
+  const day = date.toLocaleDateString(undefined, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  if (streak.current > 0) return `${day} · ${streak.current}-day streak`;
+  if (completed.length === 0) return `${day} · nothing logged yet`;
+
+  const last = new Date(completed[0].endedAt ?? completed[0].startedAt);
+  const days = Math.max(0, Math.round((startOfDay(date) - startOfDay(last)) / 86_400_000));
+  const gap = days === 0 ? "trained today" : days === 1 ? "trained yesterday" : `last session ${days} days ago`;
+  return `${day} · ${gap}`;
+}
+
+function startOfDay(d) {
+  const copy = new Date(d);
+  copy.setHours(0, 0, 0, 0);
+  return copy.getTime();
 }

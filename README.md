@@ -139,7 +139,8 @@ failure, and timer completion semantics.
 │   ├── build-exercise-data.mjs    # Regenerates app/data/ from the upstream dataset
 │   ├── check-links.mjs            # CI check: every local link resolves
 │   └── setup-github.sh            # One-shot repo/profile makeover
-├── NOTICE                     # Third-party attribution and media exclusion
+├── fonts/                     # Self-hosted Geist + Geist Mono (SIL OFL) and their licence
+├── NOTICE                     # Third-party attribution: data, media exclusion, type
 ├── tests/                     # Node test-runner suites
 └── .github/workflows/deploy.yml
 ```
@@ -192,6 +193,40 @@ media references and binary assets before deploy. No exercise displays an image,
 video — they are presented as text plus taxonomy.
 
 See [`NOTICE`](./NOTICE) for the full third-party notice.
+
+## Design
+
+The interface is built as one world rather than a set of screens: **IronLog is a ledger**.
+The page is the object, so the landing page is a training log sheet — stone paper on a
+bench-lit ground, ruled columns, figures set in mono — and the app is that same sheet
+filled in.
+
+| | |
+| --- | --- |
+| Style | "Achromatic ledger" — no brand colour in the chrome |
+| Ground | stone `#f4f3f1` on paper white; true neutral darks for the dark theme |
+| Ink | `#0a0a0a`, with grey for comparisons and secondary figures |
+| The one hue | `#1d5fbf`, on the data that matters — this session's series, the record that broke |
+| Colour budget | under ~3% of pixels; colour goes on data, never on chrome |
+| Type | Geist for text, **Geist Mono for every figure**, so weights and reps read as ledger columns |
+| Geometry | radii 8 and 6, one gap value, one button shape, row height 44 |
+| Elevation | declared once — a border or a shadow, never both. Nothing at rest carries a shadow; only sheets, menus and toasts float |
+
+Deliberate absences: no gradient on a ground, button or card; no glow, glass or backdrop
+blur; no icon in a tinted circle on a metric; no sparkline on a KPI; no eyebrow or kicker
+above a heading; no emoji standing in for an icon; no zebra striping or uppercase tracked
+table headers. Muscle badges are one quiet neutral tint rather than a rainbow, because a
+hue per muscle would put colour on the frame instead of the data.
+
+Browser surfaces are themed from the palette rather than left at their defaults: text
+selection, the caret, scrollbars, focus rings, underline offset and tabular numerals.
+There is a print stylesheet, because a log is a thing people print.
+
+Both faces are **self-hosted** from `fonts/` under the SIL Open Font License, so the site
+makes no request to any third party — including for its type. See [`NOTICE`](./NOTICE).
+
+The app ships three appearances: light (the crafted default), dark (true neutral greys,
+not navy or slate), and match-system.
 
 ## Architecture notes
 
