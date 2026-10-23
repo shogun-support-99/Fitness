@@ -41,9 +41,9 @@ function emptyDocument() {
       units: "kg",
       restSeconds: 120,
       autoStartRestTimer: true,
-      // Light is the crafted reference for the ledger style; dark and auto are
-      // equally supported and persisted per browser.
-      theme: "light",
+      // True-black is the crafted default; light and system remain equally
+      // supported and the choice is persisted per browser.
+      theme: "dark",
       instructionLanguage: "en",
     },
     createdAt: new Date().toISOString(),

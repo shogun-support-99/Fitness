@@ -158,6 +158,10 @@ function renderStartPanel(store, completed) {
 
   return `
     <div class="start-panel">
+      <div class="start-panel-copy">
+        <h2>Your next session</h2>
+        <p>Start empty, repeat your last workout, or build from a split.</p>
+      </div>
       <button class="btn btn-primary btn-xl" data-action="start-workout">
         ${icon("bolt")} Start empty workout
       </button>

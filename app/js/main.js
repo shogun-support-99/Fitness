@@ -53,6 +53,8 @@ const $ = (selector, root = document) => root.querySelector(selector);
  * leaks for the life of the page. A logger stays open for an hour.
  */
 let motionTeardowns = [];
+let lastRenderedRoute = null;
+let routeAnimationTimer = 0;
 function teardownMotion() {
   for (const fn of motionTeardowns) {
     try { fn(); } catch { /* a torn-down observer is not an error */ }
@@ -92,7 +94,7 @@ function currentElapsed() {
  * the OS via the media query in the token block; light and dark pin it.
  */
 function applyTheme() {
-  const theme = store.settings.theme ?? "light";
+  const theme = store.settings.theme ?? "dark";
   const root = document.documentElement;
   if (theme === "auto") {
     root.removeAttribute("data-theme");
@@ -109,7 +111,19 @@ function render(navigation = router.current) {
   const focusKey = focusBefore?.dataset?.focusKey ?? null;
 
   const view = VIEWS[navigation.route] ?? VIEWS.home;
+  const routeChanged = lastRenderedRoute !== null && lastRenderedRoute !== navigation.route;
   outlet.innerHTML = view(navigation.params);
+  lastRenderedRoute = navigation.route;
+
+  // Navigate as one workspace, not as a page full of independent entrances.
+  // Same-route logging updates never replay this transition.
+  if (routeChanged && !prefersReducedMotion()) {
+    clearTimeout(routeAnimationTimer);
+    outlet.classList.remove("is-entering");
+    void outlet.offsetWidth;
+    outlet.classList.add("is-entering");
+    routeAnimationTimer = window.setTimeout(() => outlet.classList.remove("is-entering"), 320);
+  }
 
   // Motion is wired after the markup exists, and torn down before the next
   // render, so a view change never leaves an observer on detached nodes.
@@ -131,6 +145,9 @@ function syncNav(route) {
     item.classList.toggle("is-active", isActive);
     item.setAttribute("aria-current", isActive ? "page" : "false");
   });
+  const primaryItems = $$(".sidebar .nav-item");
+  const index = Math.max(0, primaryItems.findIndex((item) => item.dataset.route === route));
+  primaryItems[0]?.parentElement?.style.setProperty("--active-nav-index", String(index));
 }
 
 /** Keep focus where the user was after a re-render, using data-focus-key. */
@@ -888,7 +905,10 @@ document.addEventListener("keydown", (event) => {
 restTimer.subscribe((snapshot) => {
   const bar = $(".timer-bar");
   if (!snapshot.running) {
-    if (bar && router.current.route === "workout") render();
+    // Finishing a workout stops the timer after the store has cleared the
+    // active session. That completion path owns the summary; re-rendering the
+    // now-empty logger here would delete the summary before it can open.
+    if (bar && router.current.route === "workout" && store.activeWorkout()) render();
     return;
   }
   if (!bar) {

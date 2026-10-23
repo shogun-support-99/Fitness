@@ -66,15 +66,15 @@ export function renderSettings(store) {
           ]
             .map(
               ([value, label]) => `
-            <button role="radio" aria-checked="${(s.theme ?? "light") === value}"
-                    class="segment ${(s.theme ?? "light") === value ? "is-active" : ""}"
+            <button role="radio" aria-checked="${(s.theme ?? "dark") === value}"
+                    class="segment ${(s.theme ?? "dark") === value ? "is-active" : ""}"
                     data-action="set-theme" data-theme="${value}">${label}</button>`,
             )
             .join("")}
         </div>
         <p class="panel-hint">
-          The ledger is drawn for light: stone paper, ink, and one blue on the numbers that
-          matter. Dark keeps the same rules in true neutral greys.
+          Choose cool-white light, true-black dark, or match your system. Both themes keep
+          cobalt on the data and primary controls inverted for a clear next action.
         </p>
       </section>
 

@@ -115,12 +115,13 @@ failure, and timer completion semantics.
 ├── index.html                 # Landing page
 ├── assets/
 │   ├── css/landing.css        # Landing design system
-│   ├── js/landing.js          # Scroll reveal, counters, mock clock
+│   ├── js/landing.js          # Native scroll scenes, counters, live sample/rest
 │   └── img/                   # Logo and OG cover (inline SVG, no CDN)
 ├── app/                       # The application
-│   ├── index.html             # App shell: sidebar, tab bar, outlet
+│   ├── index.html             # App shell: sidebar, workspace top bar, outlet
 │   ├── manifest.json          # PWA manifest
-│   ├── css/app.css            # App design system
+│   ├── css/app.css            # Working component and motion primitives
+│   ├── css/kinetic.css        # True-black / cobalt visual layer and shell geometry
 │   ├── data/                  # Generated exercise catalogue (see below)
 │   │   ├── exercises-index.json   # 313 KB metadata for 1,316 exercises
 │   │   ├── steps.<lang>.json      # instructions per language, lazy-loaded
@@ -197,27 +198,28 @@ See [`NOTICE`](./NOTICE) for the full third-party notice.
 
 ## Design
 
-The interface is built as one world rather than a set of screens: **IronLog is a ledger**.
-The page is the object, so the landing page is a training log sheet — stone paper on a
-bench-lit ground, ruled columns, figures set in mono — and the app is that same sheet
-filled in.
+The two surfaces share one training-data language without using the same composition.
+The landing page is **sentence-as-layout / Cobalt Field**: split type around real product
+frames on a saturated cobalt field. The app is **true-black-flat**: labelled navigation,
+a real workspace top bar, lightness-only elevation and inverted primary controls.
 
 | | |
 | --- | --- |
-| Style | "Achromatic ledger" — no brand colour in the chrome |
-| Ground | stone `#f4f3f1` on paper white; true neutral darks for the dark theme |
-| Ink | `#0a0a0a`, with grey for comparisons and secondary figures |
-| The one hue | `#1d5fbf`, on the data that matters — this session's series, the record that broke |
-| Colour budget | under ~3% of pixels; colour goes on data, never on chrome |
-| Type | Geist for text, **Geist Mono for every figure**, so weights and reps read as ledger columns |
-| Geometry | radii 8 and 6, one gap value, one button shape, row height 44 |
-| Elevation | declared once — a border or a shadow, never both. Nothing at rest carries a shadow; only sheets, menus and toasts float |
+| Landing ground | cobalt `#0034eb`, with deep-blue `#002fd6` product surfaces |
+| App grounds | true black `#000000` by default; cool white `#f4f6fb` in light mode |
+| Action | yellow `#e9e34a` on the landing; white-on-black / black-on-white primary controls in the app |
+| Data | cobalt on training figures and charts, never on navigation or primary button fills |
+| Record signal | a small yellow PR/status accent, not confetti or a second chrome colour |
+| Type | self-hosted Geist; Geist Mono for measurements, timers and updating figures |
+| Geometry | 4px landing frames; 16px app cards, 12px fields and pill-shaped app controls |
+| Elevation | declared once — a border or a shadow, never both. Only sheets, menus and toasts float |
 
 Deliberate absences: no gradient on a ground, button or card; no glow, glass or backdrop
 blur; no icon in a tinted circle on a metric; no sparkline on a KPI; no eyebrow or kicker
-above a heading; no emoji standing in for an icon; no zebra striping or uppercase tracked
-table headers. Muscle badges are one quiet neutral tint rather than a rainbow, because a
-hue per muscle would put colour on the frame instead of the data.
+above an app heading; no emoji standing in for an icon; no zebra striping or uppercase
+tracked table headers. Muscle badges stay neutral because a hue per muscle would put
+colour on the frame instead of the data. Landing imagery is the working interface plus
+original SVG movement diagrams, not unlicensed exercise photography.
 
 Browser surfaces are themed from the palette rather than left at their defaults: text
 selection, the caret, scrollbars, focus rings, underline offset and tabular numerals.
@@ -226,48 +228,49 @@ There is a print stylesheet, because a log is a thing people print.
 Both faces are **self-hosted** from `fonts/` under the SIL Open Font License, so the site
 makes no request to any third party — including for its type. See [`NOTICE`](./NOTICE).
 
-The app ships three appearances: light (the crafted default), dark (true neutral greys,
-not navy or slate), and match-system.
+The app ships three appearances: **dark (the crafted default)**, light, and match-system.
+An existing browser's saved preference is respected and applied before first paint.
 
 ## Motion
 
-Animation is authored per element rather than applied uniformly. The rule this
-follows is that scattered, identical effects read as a template, so every
-element gets the entrance that belongs to what it *is*:
+Animation is authored around the product's central ritual: **a completed set connects
+logging, rest, records and progress**. The landing page has two native-scroll scenes:
+a three-frame set/rest/progress reel and a single session interface inspected at three
+distances. Their transform origins are solved from the rendered timer and record values,
+so the zoom lands on the actual data at every viewport. A quiet reading section separates
+the two held scenes.
 
 | Element | Motion |
 | --- | --- |
-| A log row | written in — a clip-path wipe, left to right |
-| A heading | rises a few pixels, blur resolving |
+| Landing hero | native scroll scrubs three working product frames; completing the sample advances to rest |
+| Landing showcase | pans and scales from the session to its timer, then to its estimated-1RM record |
+| Interface controls | shutter/clip reveals, short press feedback and visible focus |
 | A chart bar | grows from the baseline, staggered |
-| A personal record | **stamped** — overshoot and rotation, with twelve rays of linework |
+| A personal record | **stamped** — overshoot and rotation, with bounded linework |
 | SVG linework | draws itself via `stroke-dashoffset` |
-| A figure | rolls like an odometer, thousands separator intact |
-| The rest timer | a rule that drains, shifting hue in its last fifth |
+| A figure | rolls with tabular numerals and thousands separators intact |
+| The rest timer | real countdown state with a draining progress rule and final-fifth warning |
 | A completed set | the tick draws its own check |
-| Route changes | asymmetric — 150 ms out, 260 ms in, so navigation never waits on animation |
+| App navigation | one active line travels between destinations; route changes are short and never replay on input updates |
 
-On the landing page the hero artefact is the authored moment: **the log sheet
-writes itself**. Rows cascade in reading order, ticks draw, the PR mark stamps,
-and the totals roll last — because on a real sheet the total is written after the
-sets, not before. The sheet also tilts to the cursor, under 5°, and only on
-pointer devices.
+The hero sample is functional, not a mock clock: editing weight/reps recomputes volume and
+the Epley estimate, and completing the set starts an actual 90-second countdown. The
+85 kg × 6 reps example therefore produces 510 kg of volume and a 102 kg estimated 1RM.
 
 Three rules hold everywhere:
 
-1. **Motion starts from an already-legible default** and settles into place.
-   Nothing fades up from `opacity: 0`.
-2. **Only `transform`, `opacity`, `clip-path`, `filter` and `stroke-dashoffset`
-   are animated.** No `width`, `height`, `top` or `left` — those relayout every
-   frame.
-3. **`prefers-reduced-motion` removes all of it and leaves the final state.**
-   That includes resetting `animation-delay`, because a 1.2 s delay with a
-   0.01 ms duration would otherwise hold content invisible for over a second.
-   Loops are stopped outright, not merely sped up.
+1. **Content has a readable default and a finished state.** No script, a failed module or
+   reduced motion never leaves a blank stage or hides the product behind an entrance.
+2. **Large scene motion stays compositor-friendly.** Scroll work uses one
+   `requestAnimationFrame` pass and native scrolling; transforms, opacity, clip paths and
+   SVG strokes do the visual work. Countdown progress updates at clock frequency.
+3. **`prefers-reduced-motion` removes non-essential motion and leaves the final state.**
+   Loops stop outright, scene content becomes a normal readable composition, and useful
+   state changes remain visible.
 
-`app/js/motion.js` also declines to start observers, loops and the tilt under
-reduced motion, and disconnects every observer before a re-render so a session
-left open for an hour does not accumulate leaks on detached nodes.
+`app/js/motion.js` declines to start observers and loops under reduced motion, and
+disconnects every observer before a re-render so a session left open for an hour does not
+accumulate leaks on detached nodes. There is no animation runtime or third-party script.
 
 ## Exercise visuals, and why there are no GIFs
 
