@@ -55,11 +55,38 @@
     <main id="main">
       <!-- ── First screen: the log sheet itself ───────────────────────────── -->
       <section class="sheet-hero">
+        <!--
+          The masthead band. A wide strip across the top of the first screen,
+          carrying a barbell loaded with the plates this page's own sample session
+          calls for - so the largest image on the page is a claim the arithmetic
+          supports rather than a stock photograph. IronLog ships no third-party
+          exercise media: the dataset's GIFs are (c) Gym Visual under an explicit
+          media exception that cloning does not transfer, so this is original
+          geometry drawn from MIT-licensed metadata instead.
+
+          Everything here is an enhancement. With no WebGL, a blocked script or
+          reduced motion the band collapses and the headline and log sheet carry
+          the screen on their own, which they were doing before this existed.
+        -->
+        <div class="scene-band" data-scene-weight="100">
+          <canvas class="scene-canvas" data-scene-canvas width="1200" height="340"
+                  role="img"
+                  aria-label="A barbell loaded to 100 kilograms: two 25 kilogram plates and a 15 kilogram plate on each side"></canvas>
+          <p class="scene-read" data-role="scene-readout"></p>
+        </div>
+
         <div class="wrap sheet-hero-inner">
           <div class="sheet-hero-copy">
-            <h1>
-              Log the set.<br />
-              Own the numbers.
+            <!--
+              The one loud moment on the page. Each line is wrapped so it rises
+              from behind its own baseline rather than fading in as a block, and
+              the line breaks are authored - at 7vw a line left to the viewport
+              would break somewhere different on every screen and the mask would
+              cut through a word.
+            -->
+            <h1 class="masked" data-masked>
+              <span class="mask-line"><span>Log the set.</span></span>
+              <span class="mask-line"><span>Own the numbers.</span></span>
             </h1>
             <p class="lede" data-reveal="rise">
               IronLog is a strength training journal that runs entirely in your browser.

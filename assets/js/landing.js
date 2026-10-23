@@ -281,9 +281,92 @@ function initMenuIndex() {
   items.forEach((el, i) => el.style.setProperty("--i", String(Math.floor(i / 2))));
 }
 
+/**
+ * Release the masked headline.
+ *
+ * The class is what starts the animation, so a page with no JavaScript simply
+ * shows the headline where it belongs: the CSS default is the final state and the
+ * keyframes run FROM an offset. Under reduced motion the class is still added -
+ * the CSS override resolves it to the final state immediately, which keeps the
+ * code path single rather than branching here and there.
+ */
+function initMaskedHeadline() {
+  const headline = document.querySelector("[data-masked]");
+  if (!headline) return;
+  const copy = headline.closest(".sheet-hero-copy");
+  // Two frames, not one: the browser has to commit the masked layout before the
+  // animation starts, or the reveal can be skipped entirely on a cold load.
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    headline.classList.add("is-written");
+    copy?.classList.add("is-written");
+  }));
+}
+
+/**
+ * The masthead load.
+ *
+ * A barbell loaded with the plates this page's own sample session actually calls
+ * for, so the biggest image on the page is a claim the arithmetic supports rather
+ * than a stock photograph. It is the last thing to start: the page has to read
+ * correctly before anything is fetched for it, and three.js is 407 KB gzipped.
+ *
+ * Every failure path is silent. No WebGL, a blocked script, a hidden canvas or
+ * reduced motion all leave the masthead exactly as it was - the CSS band and the
+ * headline carry the screen without it.
+ */
+async function initMastheadScene() {
+  const canvas = document.querySelector("[data-scene-canvas]");
+  if (!canvas) return;
+  const host = canvas.closest(".scene-band");
+  if (!host) return;
+
+  const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  try {
+    // Two directories up: this file is served from /assets/js/ and the scene
+    // module lives with the app at /app/js/. A wrong specifier here fails only at
+    // runtime, inside a dynamic import, which is why the catch below is not
+    // optional - but it must still point at the real path.
+    const { mountScene, plateSplit } = await import("../../app/js/scene3d.js");
+    if (!mountScene) return;
+
+    // 100 kg on a 20 kg bar: two 25s and a 15 per side. Drawn from the same
+    // sample session the log sheet below spells out, so the two agree.
+    const split = plateSplit(Number(host.dataset.sceneWeight ?? 100), { units: "kg" });
+    const readout = host.querySelector('[data-role="scene-readout"]');
+    if (readout) {
+      readout.textContent = split.ok
+        ? `${split.loaded} kg on the bar · ${split.perSide.join(" + ") || "empty"} a side`
+        : `Loaded ${split.loaded} kg of ${host.dataset.sceneWeight} kg`;
+    }
+
+    await mountScene(canvas, {
+      perSide: split.perSide,
+      colour: getComputedStyle(document.documentElement).getPropertyValue("--scene-plate").trim() || "#8a8a88",
+      reduced: reduce,
+      scope: window,
+      onUnavailable: () => {
+        host.hidden = true;
+      },
+    });
+  } catch {
+    // A missing module or a refused context must never take the masthead with it.
+    host.hidden = true;
+  }
+}
+
 initMenuIndex();
 initReveals();
 initCounters();
 initTilt();
 initCurtainFooter();
 initNavSpy();
+initMaskedHeadline();
+
+// Idle first, then the 3D. The headline and the sheet are the page; the barbell
+// is an enhancement on top of them and must not compete with them for the first
+// frames after load.
+if ("requestIdleCallback" in window) {
+  requestIdleCallback(() => initMastheadScene(), { timeout: 2400 });
+} else {
+  setTimeout(() => initMastheadScene(), 900);
+}

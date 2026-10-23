@@ -2662,7 +2662,10 @@ select {
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border: 1px solid var(--border);
+  /* No border: elevation is declared once. A 1px edge under a wide soft shadow is
+     the ghost card, and a toast floating over content is exactly the surface that
+     should say where it sits with its shadow alone. */
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--shadow-menu);
@@ -2680,7 +2683,8 @@ select {
 }
 
 .toast-accent {
-  border-left: 2px solid var(--data);
+  background: var(--data-pale);
+  color: var(--data-ink);
 }
 
 .toast-danger {
