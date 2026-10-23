@@ -47,6 +47,30 @@
   font-display: swap;
 }
 
+/* Imbue is the display voice: a tall condensed serif whose capitals read like a
+   masthead, which is what the direction sheet asked for. Self-hosted as a
+   variable font with optical sizing on, because Google Fonts is not reachable
+   from this build and a third-party font request would also be a privacy cost.
+   SIL Open Font License 1.1 - see fonts/OFL-Imbue.txt. */
+@font-face {
+  font-family: "Imbue";
+  src: url("../../fonts/Imbue-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  font-variation-settings: "opsz" 48;
+}
+
+/* Albert Sans is the reading face. SIL Open Font License 1.1 - see
+   fonts/OFL-AlbertSans.txt. */
+@font-face {
+  font-family: "Albert Sans";
+  src: url("../../fonts/AlbertSans-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Tokens ────────────────────────────────────────────────────────────── */
 
 :root {
@@ -83,6 +107,48 @@
   --data-pale: #eaf0fa;
   --data-ink: #123f7f;
 
+  /* Muscle colours, generated and contrast-verified. Hue encodes movement
+     role: warm is push, cool is pull, green is legs, violet is trunk, and
+     gold is reserved for cardio alone. See app/js/colour.js. */
+  --m-chest-ink: #be2817;   --m-chest-tint: #faf0ee;
+  --m-chest-edge: #f1dbd9;  --m-chest-sub: #a8463b;
+  --m-chest-chart: #ce2e1c;
+  --m-shoulders-ink: #9b4e13;   --m-shoulders-tint: #f9f1ea;
+  --m-shoulders-edge: #efdfd2;  --m-shoulders-sub: #8d5932;
+  --m-shoulders-chart: #a95617;
+  --m-triceps-ink: #bd176a;   --m-triceps-tint: #faeff5;
+  --m-triceps-edge: #f1d9e5;  --m-triceps-sub: #aa3c73;
+  --m-triceps-chart: #ce1c75;
+  --m-back-ink: #1664b2;   --m-back-tint: #ecf3f9;
+  --m-back-edge: #d6e3f1;  --m-back-sub: #36689a;
+  --m-back-chart: #1a6ec1;
+  --m-biceps-ink: #0d6a6d;   --m-biceps-tint: #e2f6f7;
+  --m-biceps-edge: #c3e9ea;  --m-biceps-sub: #286f71;
+  --m-biceps-chart: #107376;
+  --m-forearms-ink: #3a44d7;   --m-forearms-tint: #f1f1fb;
+  --m-forearms-edge: #d9daf1;  --m-forearms-sub: #3d44ad;
+  --m-forearms-chart: #444ed9;
+  --m-quads-ink: #107e13;   --m-quads-tint: #e4f7e5;
+  --m-quads-edge: #c7ebc8;  --m-quads-sub: #29732b;
+  --m-quads-chart: #138c17;
+  --m-hamstrings-ink: #205e0c;   --m-hamstrings-tint: #e7f7e2;
+  --m-hamstrings-edge: #cdeac3;  --m-hamstrings-sub: #3b7228;
+  --m-hamstrings-chart: #24650e;
+  --m-glutes-ink: #0c6240;   --m-glutes-tint: #e2f7ee;
+  --m-glutes-edge: #c4eadb;  --m-glutes-sub: #287254;
+  --m-glutes-chart: #0e6a45;
+  --m-calves-ink: #506a0d;   --m-calves-tint: #eef5dd;
+  --m-calves-edge: #dbe7bb;  --m-calves-sub: #586c26;
+  --m-calves-chart: #577410;
+  --m-core-ink: #9d21ca;   --m-core-tint: #f7effa;
+  --m-core-edge: #ebd9f1;  --m-core-sub: #8f3dad;
+  --m-core-chart: #ab26dc;
+  --m-cardio-ink: #5b470b;   --m-cardio-tint: #f7f2e3;
+  --m-cardio-edge: #ebe1c5;  --m-cardio-sub: #77632a;
+  --m-cardio-chart: #634d0d;
+  --chart-1: #ce2e1c;  --chart-2: #ce1c75;  --chart-3: #1a6ec1;
+  --chart-4: #0e6a45;  --chart-5: #577410;
+
   /* Change signals. Small marks and short numbers, never fills. */
   --positive: #2e7d32;
   --negative: #c4242a;
@@ -106,11 +172,21 @@
      pair, chosen once for the whole product. */
   --radius-card: 8px;
   --radius-control: 6px;
-  --row-height: 44px;
-  --gap: 12px;
+  --radius-sheet: 16px;
+  --row-height: 48px;
+  --gap: 24px;
   --pad: 24px;
+
+  /* The framed sheet. One tinted L-shaped frame holds the sidebar and the top
+     bar with no rule between them; the work sits on a white sheet inset from the
+     window's right and bottom edges. Depth comes from the single tone step, so
+     the sheet carries an edge and no shadow - a shadow under it would be a
+     second, contradicting claim about where the surface sits. */
+  --sheet-inset: 8px;
+  --topbar-height: 48px;
   --control-height: 36px;
   --rail-width: 56px;
+  --sidebar-width: 228px;
 
   /* Type. Title 24, section 16, kpi 30, body 14, small 12. Nothing under 11. */
   --fs-title: 24px;
@@ -120,7 +196,8 @@
   --fs-small: 12px;
   --fs-meta: 11px;
 
-  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Albert Sans", "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --display: "Imbue", "Geist", ui-serif, Georgia, serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Shadows exist only for what floats. */
@@ -178,6 +255,48 @@
 
     --shadow-float: 0 12px 32px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
     --shadow-menu: 0 6px 20px -6px rgba(0, 0, 0, 0.55);
+
+    /* Muscle colours, generated and contrast-verified. Hue encodes movement
+       role: warm is push, cool is pull, green is legs, violet is trunk, and
+       gold is reserved for cardio alone. See app/js/colour.js. */
+    --m-chest-ink: #dc9188;   --m-chest-tint: #4a2825;
+    --m-chest-edge: #643b36;  --m-chest-sub: #cf9690;
+    --m-chest-chart: #d2766c;
+    --m-shoulders-ink: #dcac88;   --m-shoulders-tint: #4a3525;
+    --m-shoulders-edge: #58412f;  --m-shoulders-sub: #cda78b;
+    --m-shoulders-chart: #d2986c;
+    --m-triceps-ink: #e8b2cd;   --m-triceps-tint: #4a2538;
+    --m-triceps-edge: #66374f;  --m-triceps-sub: #d091b0;
+    --m-triceps-chart: #e19ec0;
+    --m-back-ink: #88b1db;   --m-back-tint: #25384a;
+    --m-back-edge: #33485e;  --m-back-sub: #8daece;
+    --m-back-chart: #6c9fd2;
+    --m-biceps-ink: #52c7cb;   --m-biceps-tint: #204042;
+    --m-biceps-edge: #294c4d;  --m-biceps-sub: #6dbec1;
+    --m-biceps-chart: #4cc4c8;
+    --m-forearms-ink: #b2b6ec;   --m-forearms-tint: #25274a;
+    --m-forearms-edge: #393c69;  --m-forearms-sub: #9498d1;
+    --m-forearms-chart: #9ea3e8;
+    --m-quads-ink: #52cb56;   --m-quads-tint: #214222;
+    --m-quads-edge: #2a4e2b;  --m-quads-sub: #72c274;
+    --m-quads-chart: #4cc850;
+    --m-hamstrings-ink: #85d36b;   --m-hamstrings-tint: #284120;
+    --m-hamstrings-edge: #324d29;  --m-hamstrings-sub: #82c06d;
+    --m-hamstrings-chart: #6bc84c;
+    --m-glutes-ink: #5bcea0;   --m-glutes-tint: #204134;
+    --m-glutes-edge: #294d3f;  --m-glutes-sub: #6dc09f;
+    --m-glutes-chart: #4cc896;
+    --m-calves-ink: #a9cb52;   --m-calves-tint: #363f1f;
+    --m-calves-edge: #404a28;  --m-calves-sub: #a2bc62;
+    --m-calves-chart: #a5c84c;
+    --m-core-ink: #d191e8;   --m-core-tint: #40254a;
+    --m-core-edge: #5c3869;  --m-core-sub: #c092d0;
+    --m-core-chart: #c674e4;
+    --m-cardio-ink: #d8c27d;   --m-cardio-tint: #433a21;
+    --m-cardio-edge: #4f462a;  --m-cardio-sub: #c3af74;
+    --m-cardio-chart: #cdb15d;
+    --chart-1: #d2766c;  --chart-2: #e19ec0;  --chart-3: #6c9fd2;
+    --chart-4: #4cc896;  --chart-5: #a5c84c;
   }
 }
 
@@ -228,6 +347,48 @@
 
   --shadow-float: 0 12px 32px -8px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(0, 0, 0, 0.4);
   --shadow-menu: 0 6px 20px -6px rgba(0, 0, 0, 0.55);
+
+  /* Muscle colours, generated and contrast-verified. Hue encodes movement
+     role: warm is push, cool is pull, green is legs, violet is trunk, and
+     gold is reserved for cardio alone. See app/js/colour.js. */
+  --m-chest-ink: #dc9188;   --m-chest-tint: #4a2825;
+  --m-chest-edge: #643b36;  --m-chest-sub: #cf9690;
+  --m-chest-chart: #d2766c;
+  --m-shoulders-ink: #dcac88;   --m-shoulders-tint: #4a3525;
+  --m-shoulders-edge: #58412f;  --m-shoulders-sub: #cda78b;
+  --m-shoulders-chart: #d2986c;
+  --m-triceps-ink: #e8b2cd;   --m-triceps-tint: #4a2538;
+  --m-triceps-edge: #66374f;  --m-triceps-sub: #d091b0;
+  --m-triceps-chart: #e19ec0;
+  --m-back-ink: #88b1db;   --m-back-tint: #25384a;
+  --m-back-edge: #33485e;  --m-back-sub: #8daece;
+  --m-back-chart: #6c9fd2;
+  --m-biceps-ink: #52c7cb;   --m-biceps-tint: #204042;
+  --m-biceps-edge: #294c4d;  --m-biceps-sub: #6dbec1;
+  --m-biceps-chart: #4cc4c8;
+  --m-forearms-ink: #b2b6ec;   --m-forearms-tint: #25274a;
+  --m-forearms-edge: #393c69;  --m-forearms-sub: #9498d1;
+  --m-forearms-chart: #9ea3e8;
+  --m-quads-ink: #52cb56;   --m-quads-tint: #214222;
+  --m-quads-edge: #2a4e2b;  --m-quads-sub: #72c274;
+  --m-quads-chart: #4cc850;
+  --m-hamstrings-ink: #85d36b;   --m-hamstrings-tint: #284120;
+  --m-hamstrings-edge: #324d29;  --m-hamstrings-sub: #82c06d;
+  --m-hamstrings-chart: #6bc84c;
+  --m-glutes-ink: #5bcea0;   --m-glutes-tint: #204134;
+  --m-glutes-edge: #294d3f;  --m-glutes-sub: #6dc09f;
+  --m-glutes-chart: #4cc896;
+  --m-calves-ink: #a9cb52;   --m-calves-tint: #363f1f;
+  --m-calves-edge: #404a28;  --m-calves-sub: #a2bc62;
+  --m-calves-chart: #a5c84c;
+  --m-core-ink: #d191e8;   --m-core-tint: #40254a;
+  --m-core-edge: #5c3869;  --m-core-sub: #c092d0;
+  --m-core-chart: #c674e4;
+  --m-cardio-ink: #d8c27d;   --m-cardio-tint: #433a21;
+  --m-cardio-edge: #4f462a;  --m-cardio-sub: #c3af74;
+  --m-cardio-chart: #cdb15d;
+  --chart-1: #d2766c;  --chart-2: #e19ec0;  --chart-3: #6c9fd2;
+  --chart-4: #4cc896;  --chart-5: #a5c84c;
 }
 
 /* ── Reset ─────────────────────────────────────────────────────────────── */
@@ -462,6 +623,91 @@ table,
   display: none;
 }
 
+/* The right-hand half of the L: top bar above, sheet below. It is a column so
+   the bar can stay pinned while the sheet scrolls inside it. */
+.frame {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100dvh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--topbar-height);
+  padding: 0 14px;
+  /* Same tint as the sidebar and no rule between them: the two read as one
+     frame. A border here was the single most-flagged mistake in the study the
+     direction sheet was distilled from. */
+  background: var(--ground);
+}
+
+.topbar-context {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.topbar-live {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: var(--fs-small);
+  color: var(--text-secondary);
+}
+
+.topbar-live[hidden] {
+  display: none;
+}
+
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--negative);
+  animation: live-pulse 2.2s var(--ease-out-soft) infinite;
+}
+
+.live-label {
+  color: var(--muted);
+}
+
+.live-clock {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text);
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+.topbar-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
 .main {
   flex: 1 1 auto;
   min-width: 0;
@@ -469,9 +715,6 @@ table,
   padding: 16px 14px calc(76px + env(safe-area-inset-bottom, 0px));
 }
 
-.tabbar {
-  display: none;
-}
 
 .icon {
   width: 16px;
@@ -504,12 +747,17 @@ table,
   flex-wrap: wrap;
 }
 
+/* Imbue is the display voice: a tall condensed serif, so a view title reads as a
+   heading in a printed log rather than as another line of UI chrome. Optical
+   sizing is on and tracking stays above the -0.04em floor. */
 .view-head h1 {
   margin: 0;
-  font-size: var(--fs-title);
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
+  font-family: var(--display);
+  font-size: clamp(30px, 2.1vw + 18px, 40px);
+  font-weight: 500;
+  font-variation-settings: "opsz" 40;
+  letter-spacing: -0.015em;
+  line-height: 1.06;
 }
 
 .view-head h2 {
@@ -926,13 +1174,22 @@ table,
 .badge {
   display: inline-flex;
   align-items: center;
-  height: 18px;
-  padding: 0 7px;
+  height: 20px;
+  padding: 0 8px;
   border-radius: var(--radius-control);
-  background: var(--raised);
-  color: var(--muted);
+  /* Defaults so a badge with no muscle still renders; the per-muscle rules below
+     override all four. Contrast for every pairing is verified in
+     tests/colour.test.js, not eyeballed. */
+  --m-ink: var(--muted);
+  --m-tint: var(--raised);
+  --m-edge: var(--border);
+  --m-sub: var(--muted);
+  background: var(--m-tint);
+  color: var(--m-ink);
+  border: 1px solid var(--m-edge);
   font-size: var(--fs-meta);
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: 0.005em;
   line-height: 1;
   text-transform: capitalize;
   white-space: nowrap;
@@ -944,23 +1201,113 @@ table,
   gap: 4px;
 }
 
-.badge-chest,
-.badge-back,
-.badge-shoulders,
-.badge-biceps,
-.badge-triceps,
-.badge-forearms,
-.badge-quads,
-.badge-hamstrings,
-.badge-glutes,
-.badge-calves,
-.badge-core,
-.badge-cardio,
+/* Muscle badges are colour-coded from the generated palette in app/js/colour.js.
+   Twelve muscles previously shared one grey, which is the single biggest reason
+   the library read as generic: the one field that distinguishes an exercise from
+   the next carried no signal at all.
+
+   Each rule only re-points four custom properties at that muscle's theme tokens,
+   so the badge below stays one rule and both themes stay correct - an inline
+   style could not follow a theme change.
+
+   Hue is the movement role, not a decoration: warm is push, cool is pull, green
+   is legs, violet is trunk, gold is cardio and nothing else. The written name
+   always sits beside the swatch, so colour is never the only channel. */
+
+.badge-chest {
+  --m-ink: var(--m-chest-ink);
+  --m-tint: var(--m-chest-tint);
+  --m-edge: var(--m-chest-edge);
+  --m-sub: var(--m-chest-sub);
+}
+
+.badge-shoulders {
+  --m-ink: var(--m-shoulders-ink);
+  --m-tint: var(--m-shoulders-tint);
+  --m-edge: var(--m-shoulders-edge);
+  --m-sub: var(--m-shoulders-sub);
+}
+
+.badge-triceps {
+  --m-ink: var(--m-triceps-ink);
+  --m-tint: var(--m-triceps-tint);
+  --m-edge: var(--m-triceps-edge);
+  --m-sub: var(--m-triceps-sub);
+}
+
+.badge-back {
+  --m-ink: var(--m-back-ink);
+  --m-tint: var(--m-back-tint);
+  --m-edge: var(--m-back-edge);
+  --m-sub: var(--m-back-sub);
+}
+
+.badge-biceps {
+  --m-ink: var(--m-biceps-ink);
+  --m-tint: var(--m-biceps-tint);
+  --m-edge: var(--m-biceps-edge);
+  --m-sub: var(--m-biceps-sub);
+}
+
+.badge-forearms {
+  --m-ink: var(--m-forearms-ink);
+  --m-tint: var(--m-forearms-tint);
+  --m-edge: var(--m-forearms-edge);
+  --m-sub: var(--m-forearms-sub);
+}
+
+.badge-quads {
+  --m-ink: var(--m-quads-ink);
+  --m-tint: var(--m-quads-tint);
+  --m-edge: var(--m-quads-edge);
+  --m-sub: var(--m-quads-sub);
+}
+
+.badge-hamstrings {
+  --m-ink: var(--m-hamstrings-ink);
+  --m-tint: var(--m-hamstrings-tint);
+  --m-edge: var(--m-hamstrings-edge);
+  --m-sub: var(--m-hamstrings-sub);
+}
+
+.badge-glutes {
+  --m-ink: var(--m-glutes-ink);
+  --m-tint: var(--m-glutes-tint);
+  --m-edge: var(--m-glutes-edge);
+  --m-sub: var(--m-glutes-sub);
+}
+
+.badge-calves {
+  --m-ink: var(--m-calves-ink);
+  --m-tint: var(--m-calves-tint);
+  --m-edge: var(--m-calves-edge);
+  --m-sub: var(--m-calves-sub);
+}
+
+.badge-core {
+  --m-ink: var(--m-core-ink);
+  --m-tint: var(--m-core-tint);
+  --m-edge: var(--m-core-edge);
+  --m-sub: var(--m-core-sub);
+}
+
+.badge-cardio {
+  --m-ink: var(--m-cardio-ink);
+  --m-tint: var(--m-cardio-tint);
+  --m-edge: var(--m-cardio-edge);
+  --m-sub: var(--m-cardio-sub);
+}
+
+/* Muscles outside the twelve the catalogues actually use. They fall back to the
+   neutral rather than to an unstyled badge, so a future dataset value still reads
+   as a deliberate part of the system. */
 .badge-neck,
-.badge-other {
-  background: var(--raised);
-  color: var(--muted);
-  border: 0;
+.badge-other,
+.badge:not([class*="badge-"]) {
+  --m-ink: var(--muted);
+  --m-tint: var(--raised);
+  --m-edge: var(--border);
+  --m-sub: var(--muted);
 }
 
 /* ── Forms ─────────────────────────────────────────────────────────────── */
@@ -2072,6 +2419,25 @@ select {
   margin-top: 2px;
 }
 
+.detail-sets {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.detail-sets li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.detail-sets li:last-child {
+  border-bottom: none;
+}
+
 .detail-set-n {
   font-family: var(--mono);
   color: var(--muted);
@@ -2079,6 +2445,45 @@ select {
 
 .detail-set-v {
   font-family: var(--mono);
+}
+
+/* The 3D load. The canvas is transparent so the sheet's white shows through, and
+   the read-out below it is the honest caption: it names what was actually loaded
+   rather than restating the record, because plate arithmetic cannot always reach
+   a recorded weight exactly. */
+.scene-host {
+  margin-top: 14px;
+  padding: 10px 0 12px;
+  border-top: 1px solid var(--rule);
+}
+
+.scene-host[hidden] {
+  display: none;
+}
+
+.scene-canvas {
+  display: block;
+  width: 100%;
+  height: 210px;
+  /* Touch-action none would trap page scroll on a phone; the scene only reads
+     the pointer for parallax, so scrolling must still win. */
+  touch-action: pan-y;
+}
+
+.scene-read {
+  margin: 8px 0 0;
+  font-family: var(--mono);
+  font-size: var(--fs-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: center;
+}
+
+.detail-set-vol {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: right;
 }
 
 .detail-instructions-head {
@@ -2257,7 +2662,10 @@ select {
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border: 1px solid var(--border);
+  /* No border: elevation is declared once. A 1px edge under a wide soft shadow is
+     the ghost card, and a toast floating over content is exactly the surface that
+     should say where it sits with its shadow alone. */
+  border: 1px solid transparent;
   border-radius: var(--radius-card);
   background: var(--surface);
   box-shadow: var(--shadow-menu);
@@ -2275,7 +2683,8 @@ select {
 }
 
 .toast-accent {
-  border-left: 2px solid var(--data);
+  background: var(--data-pale);
+  color: var(--data-ink);
 }
 
 .toast-danger {
@@ -2291,88 +2700,118 @@ select {
     position: sticky;
     top: 0;
     inset: auto;
-    flex: 0 0 var(--rail-width);
-    width: var(--rail-width);
+    flex: 0 0 var(--sidebar-width);
+    width: var(--sidebar-width);
     height: 100dvh;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     gap: 0;
-    padding: 14px 0 14px;
+    padding: 18px 14px 18px;
     border-top: 0;
-    border-right: 1px solid var(--border);
+    /* No rule between the sidebar and the top bar. The frame is one tinted
+       L-shape; the sheet's own edge is what separates chrome from work. */
+    border-right: 0;
   }
 
-  /* The rail carries the mark at the top, then destinations on a 44px pitch,
-     then utilities at the bottom. Unlabelled icons need an accessible name. */
+  /* The top bar is part of the frame, so it stays tinted and gains the sheet's
+     inset as padding: its content lines up with the sheet's left edge. */
+  .topbar {
+    height: var(--topbar-height);
+    padding: 0 20px;
+  }
+
+  /* The sheet. White, one step off the frame's tint, inset 8px from the window's
+     right and bottom edges, a 1px edge, 16px corners and deliberately no shadow:
+     depth here comes from the single tone step, and a shadow would be a second,
+     contradicting claim about where the surface sits. */
+  .main {
+    margin: 0 var(--sheet-inset) var(--sheet-inset) 0;
+    padding: 28px 32px 40px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sheet);
+  }
+
+  /* The sidebar is 228px wide, so destinations carry their labels again. The
+     active one is a 2px underline in ink - not a filled pill, and not a coloured
+     block: the brand keeps under 3% of the surface and the data carries chroma. */
   .brand {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    margin-bottom: 18px;
+    gap: 10px;
+    height: 40px;
+    margin-bottom: 22px;
+    padding: 0 8px;
     border-radius: var(--radius-control);
     color: var(--text);
     text-decoration: none;
   }
 
   .brand-name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
+    /* No longer clipped: a 228px sidebar has room for the name, and a wordmark
+       reads as a product rather than as an icon strip. */
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
+  }
+
+  .brand-mark {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 auto;
   }
 
   .nav {
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: flex-start;
-    gap: 4px;
+    gap: 2px;
     flex: 0 0 auto;
     width: 100%;
   }
 
   .nav-item {
+    position: relative;
     flex-direction: row;
-    width: 38px;
-    height: 38px;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    height: var(--row-height);
     min-width: 0;
-    padding: 0;
-    justify-content: center;
+    padding: 0 12px;
+    justify-content: flex-start;
     border-radius: var(--radius-control);
-  }
-
-  /* On the rail the label is the accessible name and the tooltip, not ink. */
-  .nav-item {
-    font-size: 0;
-  }
-
-  .nav-item::after {
-    content: attr(aria-label);
-    position: absolute;
-    left: calc(100% + 10px);
-    top: 50%;
-    transform: translateY(-50%) translateX(-4px);
-    padding: 5px 9px;
-    border-radius: var(--radius-control);
-    background: var(--accent);
-    color: var(--accent-ink);
-    font-size: var(--fs-small);
+    font-size: var(--fs-body);
     font-weight: 500;
-    line-height: 1;
-    white-space: nowrap;
-    opacity: 0;
+  }
+
+  /* The active destination is a 2px underline in ink. Everything else in the
+     chrome stays grey, so the underline is the only thing that moves when you
+     navigate - one signal, not a highlighted pill competing with the data. */
+  .nav-item::after {
+    content: "";
+    position: absolute;
+    left: 12px;
+    right: 12px;
+    bottom: 6px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--text);
+    transform: scaleX(0);
+    transform-origin: left center;
     pointer-events: none;
-    transition: opacity 0.14s var(--ease), transform 0.14s var(--ease);
-    box-shadow: var(--shadow-menu);
+    transition: transform 0.26s var(--ease-expo);
   }
 
   .nav-item:hover::after,
   .nav-item:focus-visible::after {
-    opacity: 1;
-    transform: translateY(-50%) translateX(0);
+    transform: scaleX(0.42);
+  }
+
+  .nav-item.is-active::after {
+    transform: scaleX(1);
   }
 
   .nav-item {
@@ -2540,23 +2979,31 @@ select {
   animation-delay: var(--reveal-delay);
 }
 
-.reveal-write {
+/* The animation-name is gated on .is-revealed, which the IntersectionObserver
+   adds. Without that gate the reveal plays on page load and everything below the
+   fold has finished animating before the reader scrolls to it. Gating it also
+   keeps the no-JS case correct: with no observer there is no class, so there is
+   no animation, and the element simply sits in its normal visible state. */
+.reveal-grow {
+  transform-origin: bottom center;
+}
+
+.reveal-write.is-revealed {
   animation-name: reveal-write;
 }
-.reveal-rise {
+.reveal-rise.is-revealed {
   animation-name: reveal-rise;
   animation-duration: var(--dur-base);
 }
-.reveal-grow {
+.reveal-grow.is-revealed {
   animation-name: reveal-grow;
-  transform-origin: bottom center;
 }
-.reveal-stamp {
+.reveal-stamp.is-revealed {
   animation-name: reveal-stamp;
   animation-timing-function: var(--ease-spring);
   animation-duration: 420ms;
 }
-.reveal-draw {
+.reveal-draw.is-revealed {
   animation-name: reveal-draw;
   animation-duration: 700ms;
 }
@@ -2781,6 +3228,37 @@ select {
   offset-rotate: 0deg;
 }
 
+/* offset-path: path() needs Safari 16+ / Chrome 46+ / Firefox 72+. Where it is
+   missing, the mover has no path to sit on and would be painted at the SVG
+   origin - a barbell parked in the top-left corner of its own diagram. Rather
+   than show that, fall back to a simple vertical travel that needs nothing but
+   transform, and keep the drawn travel path (which is plain SVG and works
+   everywhere) as the thing that still explains the movement. */
+@supports not (offset-path: path("M0 0")) {
+  .dg-mover {
+    offset-path: none !important;
+  }
+
+  .is-animated .dg-mover,
+  .is-animated .dg-mover[data-reverse="1"] {
+    animation-name: dg-fallback-travel;
+    animation-duration: 2600ms;
+    animation-timing-function: var(--ease-out-soft);
+    animation-delay: 900ms;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+  }
+
+  @keyframes dg-fallback-travel {
+    from {
+      transform: translate3d(0, 26px, 0);
+    }
+    to {
+      transform: translate3d(0, -26px, 0);
+    }
+  }
+}
+
 .is-animated .dg-mover {
   animation: dg-travel 2600ms var(--ease-out-soft) 900ms infinite alternate;
 }
@@ -2861,7 +3339,7 @@ select {
 
 .dg-core text {
   fill: var(--data-ink, var(--data));
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: 11px;
   font-weight: 500;
   letter-spacing: 0;
@@ -2951,7 +3429,7 @@ select {
 }
 
 .movement-value {
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: var(--fs-small);
   font-variant-numeric: tabular-nums;
   text-transform: capitalize;
@@ -3082,7 +3560,6 @@ select {
   }
 }
 
-.set-row .check-draw,
 .set-row [data-action="toggle-set"] svg path {
   stroke-dasharray: 26;
 }
@@ -3219,7 +3696,7 @@ select {
   padding: 0 12px;
   border-right: 1px solid var(--border);
   background: var(--raised);
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-size: var(--fs-meta);
   font-variant-numeric: tabular-nums;
   color: var(--muted);
@@ -3281,7 +3758,7 @@ select {
 }
 
 .ticker-item b {
-  font-family: var(--font-mono);
+  font-family: var(--mono);
   font-weight: 400;
   font-size: var(--fs-small);
   color: var(--text);
@@ -3333,49 +3810,37 @@ select {
   transition-duration: 70ms;
 }
 
-/* Nav: an ink underline that draws rather than appearing. */
+/* Nav on a phone: an ink underline that draws rather than appearing. Scoped to
+   the bottom bar because the desktop sidebar has its own underline geometry
+   earlier in the file, and a media query adds no specificity - left ungated this
+   rule would win there simply by coming later. */
 .nav-item {
   position: relative;
 }
 
-.nav-item::after {
-  content: "";
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 5px;
-  height: 1.5px;
-  background: var(--text);
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--dur-base) var(--ease-expo);
+@media (max-width: 899px) {
+  .nav-item::after {
+    content: "";
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 5px;
+    height: 1.5px;
+    background: var(--text);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur-base) var(--ease-expo);
+  }
+
+  .nav-item:hover::after {
+    transform: scaleX(0.42);
+  }
+
+  .nav-item.is-active::after {
+    transform: scaleX(1);
+  }
 }
 
-.nav-item:hover::after {
-  transform: scaleX(0.42);
-}
-
-.nav-item.is-active::after {
-  transform: scaleX(1);
-}
-
-/* Mobile tabbar: one indicator element travelling between items, so the active
-   state is a shared-element transition rather than five independent flips. */
-.tabbar {
-  position: relative;
-}
-
-.tabbar-indicator {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: var(--tab-w, 20%);
-  height: 2px;
-  background: var(--text);
-  transform: translate3d(var(--tab-x, 0), 0, 0);
-  transition: transform 340ms var(--ease-expo);
-  pointer-events: none;
-}
 
 /* ── 10. Charts ───────────────────────────────────────────────────────────
    Bars grow from the baseline with a stagger. The true height is already in
@@ -3592,7 +4057,6 @@ select {
 
 @media print {
   .sidebar,
-  .tabbar,
   .timer-bar,
   #toast-host,
   .btn,

@@ -5,7 +5,7 @@
  * rest-timer controls, and finish/discard actions.
  */
 
-import { compactNumber, estimatedOneRepMax } from "../stats.js";
+import { compactNumber, completedSetVolume, estimatedOneRepMax, workoutSetCount } from "../stats.js";
 import { emptyState, esc, icon } from "../ui.js";
 
 /** Rows built in the add-exercise sheet before search takes over. */
@@ -31,11 +31,8 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
       </section>`;
   }
 
-  const doneSets = workout.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
-  const volume = workout.exercises.reduce(
-    (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
-    0,
-  );
+  const doneSets = workoutSetCount(workout);
+  const volume = completedSetVolume(workout);
 
   return `
     <section class="view view-workout">

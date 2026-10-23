@@ -60,11 +60,25 @@ export function emptyState({ icon: iconName = "info", title, body, action = "" }
     </div>`;
 }
 
-export function statTile({ label, value, unit = "", hint = "", tone = "" }) {
+/**
+ * A count tile.
+ *
+ * `value` is what renders, and is always the truth: the tile is correct with JS
+ * off, under reduced motion, and before the observer fires. `count` is optional
+ * and only ever the same number in raw form, so motion.js can roll the digits
+ * toward a value the tile was already displaying. Passing a `count` that differs
+ * from `value` would animate the tile into disagreeing with itself, which is why
+ * the two are derived from one argument by the caller.
+ */
+export function statTile({ label, value, unit = "", hint = "", tone = "", count = null, decimals = 0 }) {
+  const roll =
+    count !== null && Number.isFinite(Number(count))
+      ? ` data-count-to="${esc(Number(count))}" data-count-decimals="${esc(decimals)}"`
+      : "";
   return `
-    <div class="tile ${tone}">
+    <div class="tile ${tone}" data-reveal="rise">
       <span class="tile-label">${esc(label)}</span>
-      <span class="tile-value">${esc(value)}${unit ? `<em>${esc(unit)}</em>` : ""}</span>
+      <span class="tile-value"${roll}>${esc(value)}${unit ? `<em>${esc(unit)}</em>` : ""}</span>
       ${hint ? `<span class="tile-hint">${esc(hint)}</span>` : ""}
     </div>`;
 }

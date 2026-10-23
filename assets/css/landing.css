@@ -17,6 +17,22 @@
    no gradient text, no glow, no glass, no eyebrow above a heading, no emoji.
    ========================================================================== */
 
+@font-face {
+  font-family: "Imbue";
+  src: url("../fonts/Imbue-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Albert Sans";
+  src: url("../fonts/AlbertSans-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* ── Faces ─────────────────────────────────────────────────────────────── */
 
 @font-face {
@@ -88,7 +104,12 @@
   --fs-small: 14px;
   --fs-meta: 13px;
 
-  --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font: "Albert Sans", "Geist", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Imbue is the display voice: a tall condensed serif whose capitals read like a
+     masthead. Self-hosted as a variable font, because Google Fonts is not
+     reachable from this build and a third-party font request is also a privacy
+     cost. SIL Open Font License 1.1 - see fonts/OFL-Imbue.txt. */
+  --display: "Imbue", "Geist", ui-serif, Georgia, serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
   --shadow-sheet: 0 24px 60px -20px rgba(0, 0, 0, 0.65), 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -216,10 +237,149 @@ h3 {
   text-wrap: balance;
 }
 
+/* The masthead title. Imbue at 7-9vw, set so one short line fills its column;
+   tracking stays above the -0.04em floor and optical sizing is on, which is what
+   keeps a tall condensed serif from going spindly at display size. */
 h1 {
-  font-size: var(--fs-display);
-  letter-spacing: -0.03em;
-  line-height: 0.98;
+  font-family: var(--display);
+  font-size: clamp(46px, 7.4vw, 108px);
+  font-weight: 400;
+  font-variation-settings: "opsz" 72;
+  letter-spacing: -0.022em;
+  line-height: 0.94;
+}
+
+/* ── The masthead band ───────────────────────────────────────────────────
+   A wide strip across the top of the first screen. The canvas is transparent so
+   the page ground shows through it, and the band carries no border and no shadow:
+   it is a picture on the paper, not a card sitting on the page.
+
+   It collapses to nothing when the scene cannot run, so the hero never reserves
+   height for a picture that will not arrive. */
+.scene-band {
+  position: relative;
+  width: 100%;
+  height: clamp(180px, 26vw, 340px);
+  margin-bottom: 8px;
+  --scene-plate: #4a4a48;
+}
+
+.scene-band[hidden] {
+  display: none;
+}
+
+.scene-band .scene-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The scene only reads the pointer for parallax, so page scroll must still win
+     on a phone. touch-action: none here would trap the reader at the top of the
+     page. */
+  touch-action: pan-y;
+}
+
+.scene-band .scene-read {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .scene-band {
+    height: 168px;
+  }
+
+  .scene-band .scene-read {
+    font-size: 12px;
+  }
+}
+
+/* ── The masked headline ───────────────────────────────────────────────────
+   The page's one loud moment. Each line rises from behind its own baseline
+   rather than fading in as a block: the mask is the line box, the motion is a
+   transform, and the second line follows the first by 110ms so the two read as
+   one gesture with a beat between them rather than as two effects.
+
+   The final state is the default and the animation runs FROM an offset, so a
+   browser that never runs it - or a reader who has asked for less motion - sees
+   the headline sitting where it belongs instead of clipped out of view. */
+.mask-line {
+  display: block;
+  overflow: hidden;
+  /* A little headroom so a descender or an ascender is not shaved by the mask. */
+  padding-bottom: 0.06em;
+  margin-bottom: -0.06em;
+}
+
+.mask-line > span {
+  display: block;
+  transform: translateY(105%);
+}
+
+.masked.is-written .mask-line > span {
+  animation: mask-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.masked.is-written .mask-line:nth-child(2) > span {
+  animation-delay: 110ms;
+}
+
+@keyframes mask-rise {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* The standfirst and the action follow the headline together, quietly, so the
+   loud moment stays the only loud one. */
+.sheet-hero-copy.is-written .lede,
+.sheet-hero-copy.is-written .cta-row,
+.sheet-hero-copy.is-written .proof-line {
+  animation: fade-up 620ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+
+.sheet-hero-copy.is-written .cta-row {
+  animation-delay: 340ms;
+}
+
+.sheet-hero-copy.is-written .proof-line {
+  animation-delay: 430ms;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mask-line > span {
+    transform: none;
+  }
+
+  .masked.is-written .mask-line > span,
+  .sheet-hero-copy.is-written .lede,
+  .sheet-hero-copy.is-written .cta-row,
+  .sheet-hero-copy.is-written .proof-line {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 h2 {
@@ -1356,8 +1516,9 @@ tr.is-done .tick::after {
 
 /* The rest rule drains once, on load, then holds. A looping drain on a static
    page would be a lie about a timer that is not running. */
-[data-sheet-write] .logsheet-rest .rest-fill,
-[data-sheet-write] .rest-fill {
+/* The element is .rest-track > i, not .rest-fill - the previous selector named
+   a class the markup never carried, so this animation silently never ran. */
+[data-sheet-write] .rest-track i {
   animation: rest-drain 2200ms var(--ease-out-soft) 900ms both;
   transform-origin: left center;
 }
@@ -1382,18 +1543,22 @@ tr.is-done .tick::after {
   animation-fill-mode: both;
 }
 
-[data-reveal="write"] {
+/* Gated on .is-revealed, which landing.js adds from an IntersectionObserver.
+   Ungated, these all played on load and the sections below the hero had already
+   finished animating before the reader reached them. The hero sheet's own
+   write-in is deliberately NOT gated - that one is meant to play on load. */
+[data-reveal="write"].is-revealed {
   animation-name: reveal-write;
 }
-[data-reveal="rise"] {
+[data-reveal="rise"].is-revealed {
   animation-name: reveal-rise;
   animation-duration: 480ms;
 }
-[data-reveal="rule"] {
+[data-reveal="rule"].is-revealed {
   animation-name: rule-draw;
   animation-duration: 700ms;
 }
-[data-reveal="stamp"] {
+[data-reveal="stamp"].is-revealed {
   animation-name: pr-stamp;
   animation-timing-function: var(--ease-spring);
 }
@@ -1552,8 +1717,8 @@ tr.is-done .tick::after {
   }
 
   /* The rest rule holds at its stated value rather than draining. */
-  .rest-fill {
-    transform: scaleX(var(--rest-end, 0.32)) !important;
+  .rest-track i {
+    transform: none !important;
     animation: none !important;
   }
 
