@@ -4,9 +4,9 @@
 
 # IronLog
 
-### The strength training log that respects your data.
+### Log workouts. Get stronger.
 
-**Log the set. Own the numbers.**
+**Routines, previous numbers, rest and progress — all yours.**
 
 [**Open the app**](https://shogun-support-99.github.io/fitness/app/) · [**Landing page**](https://shogun-support-99.github.io/fitness/)
 
@@ -57,8 +57,10 @@ lives in your browser's local storage, and you can export all of it as JSON at a
 - **Exercise detail** — target muscle, secondary muscles, body part and equipment, written
   instructions, plus licensed RepDB start/peak illustrations or an original movement
   diagram when no licensed still is available.
-- **Session templates** — repeat your last workout with its sets and weights prefilled,
-  or start from a Push / Pull / Legs split.
+- **Reusable routines** — start empty, repeat your last workout with its sets and weights
+  prefilled, or use Push, Pull, Legs and Full body routines from Home or Workout.
+- **Focused navigation** — Home, Workout, Exercises and Profile tabs on mobile, with
+  History and Settings alongside them on larger screens.
 - **Export, import, erase** — your whole history is one JSON document.
 
 ## Try it
@@ -69,7 +71,7 @@ Open **[the app](https://shogun-support-99.github.io/fitness/app/)** and:
 2. Add an exercise — search "bench", pick **Barbell Bench Press**.
 3. Enter `80` and `8`, tick the set. The rest timer starts and the 1RM appears.
 4. Add a couple more sets, then **Finish workout** to see the summary.
-5. Open **Progress** to see the records and weekly volume.
+5. Open **Profile** to see the records and weekly volume.
 
 Everything is written to local storage immediately, so a closed tab never costs a session.
 
@@ -123,7 +125,7 @@ ID stability, and the provenance/licensing checks for every committed RepDB WebP
 │   ├── index.html             # App shell: sidebar, workspace top bar, outlet
 │   ├── manifest.json          # PWA manifest
 │   ├── css/app.css            # Working component and motion primitives
-│   ├── css/kinetic.css        # True-black / cobalt visual layer and shell geometry
+│   ├── css/kinetic.css        # Bright blue product theme, dark mode and responsive shell
 │   ├── data/                  # Generated exercise catalogue (see below)
 │   │   ├── exercises-index.json   # metadata for 1,316 MIT data records
 │   │   ├── steps.<lang>.json      # original instructions, lazy-loaded
@@ -140,7 +142,7 @@ ID stability, and the provenance/licensing checks for every committed RepDB WebP
 │       ├── catalogue.js       # External catalogue: fetch, merge, instructions
 │       ├── router.js          # Hash router
 │       ├── ui.js              # Escaping, icons, chart primitives
-│       └── views/             # home, workout, history, stats, library, settings
+│       └── views/             # home, routines, workout, history, stats, library, settings
 ├── scripts/
 │   ├── build-exercise-data.mjs    # Regenerates the original MIT data catalogue
 │   ├── build-repdb-data.mjs       # Generates RepDB app data + copies licensed stills
@@ -210,38 +212,32 @@ allowlist. See [`NOTICE`](./NOTICE) for the complete third-party record.
 
 ## Design
 
-The two surfaces share one training-data language without using the same composition.
-The landing page is **sentence-as-layout / Cobalt Field**: split type around real product
-frames on a saturated cobalt field. The app is **true-black-flat**: labelled navigation,
-a real workspace top bar, lightness-only elevation and inverted primary controls.
+The app and landing page share a bright, focused training-product system inspired by
+Hevy's public interface patterns, implemented with IronLog's own markup, local-first
+architecture and licensed media. The workflow centres on reusable routines, an empty
+workout, previous-performance columns, completed-set checks, automatic rest and a clear
+session summary rather than on decorative dashboards.
 
 | | |
 | --- | --- |
-| Landing ground | cobalt `#0034eb`, with deep-blue `#002fd6` product surfaces |
-| App grounds | true black `#000000` by default; cool white `#f4f6fb` in light mode |
-| Action | yellow `#e9e34a` on the landing; white-on-black / black-on-white primary controls in the app |
-| Data | cobalt on training figures and charts, never on navigation or primary button fills |
-| Record signal | a small yellow PR/status accent, not confetti or a second chrome colour |
-| Type | self-hosted Geist; Geist Mono for measurements, timers and updating figures |
-| Geometry | 4px landing frames; 16px app cards, 12px fields and pill-shaped app controls |
-| Elevation | declared once — a border or a shadow, never both. Only sheets, menus and toasts float |
+| Grounds | cool white `#f5f6f8` with white product cards; `#111315` in dark mode |
+| Action and data | bright blue `#1b96e8` for primary actions, links, timers and charts |
+| Completed sets | green checks and a restrained green row wash |
+| Navigation | six desktop destinations; Home, Workout, Exercises and Profile on mobile |
+| Type | self-hosted Geist, with tabular figures for measurements and updating values |
+| Geometry | compact 12px cards, 8px controls, thin borders and floating sheets/toasts |
+| Product artwork | working interface samples, licensed exercise stills and original SVG diagrams |
 
-Deliberate absences: no gradient on a ground, button or card; no glow, glass or backdrop
-blur; no icon in a tinted circle on a metric; no sparkline on a KPI; no eyebrow or kicker
-above an app heading; no emoji standing in for an icon; no zebra striping or uppercase
-tracked table headers. Muscle badges stay neutral because a hue per muscle would put
-colour on the frame instead of the data. Landing imagery is the working interface plus
-original SVG movement diagrams, not unlicensed exercise photography.
-
-Browser surfaces are themed from the palette rather than left at their defaults: text
-selection, the caret, scrollbars, focus rings, underline offset and tabular numerals.
-There is a print stylesheet, because a log is a thing people print.
+The light theme is the default. Dark and match-system appearances use the same blue
+actions and green completion feedback, and an existing browser preference is respected
+before first paint. Responsive layouts keep the logger's Set / Previous / Weight / Reps /
+Done workflow usable on narrow screens.
 
 Both faces are **self-hosted** from `fonts/` under the SIL Open Font License, so the site
 makes no request to any third party — including for its type. See [`NOTICE`](./NOTICE).
-
-The app ships three appearances: **dark (the crafted default)**, light, and match-system.
-An existing browser's saved preference is respected and applied before first paint.
+Browser surfaces are themed from the palette rather than left at their defaults: text
+selection, the caret, scrollbars, focus rings, underline offset and tabular numerals.
+There is a print stylesheet, because a log is a thing people print.
 
 ## Motion
 

@@ -11,7 +11,7 @@
 import { EQUIPMENT, MUSCLE_GROUPS, searchExercises } from "../exercises.js";
 import { availableLanguages, hasInstructions } from "../catalogue.js";
 import { emptyState, esc, icon, muscleBadge } from "../ui.js";
-import { exerciseMedia, muscleDiagram, movementClass } from "../diagrams.js";
+import { exerciseMedia, exerciseThumbnail, muscleDiagram, movementClass } from "../diagrams.js";
 
 /** Rows rendered before asking the user to narrow the search. */
 export const RESULT_CAP = 120;
@@ -27,7 +27,7 @@ export function renderLibrary(store, { query = "", muscle = "all" } = {}) {
     <section class="view view-library">
       <header class="view-head">
         <div>
-          <h1>Library</h1>
+          <h1>Exercises</h1>
           <p class="view-subline">
             ${all.length} exercise${all.length === 1 ? "" : "s"}${customCount ? ` · ${customCount} custom` : ""}
             ${catalogueReady ? "" : " · loading catalogue…"}
@@ -74,13 +74,14 @@ export function renderLibrary(store, { query = "", muscle = "all" } = {}) {
   `;
 }
 
-function renderLibraryRow(exercise) {
+export function renderLibraryRow(exercise) {
   const secondary = exercise.secondaryMuscles?.length
     ? exercise.secondaryMuscles.slice(0, 3).join(", ")
     : "";
   return `
     <li class="library-row">
       <button class="library-open" data-action="open-exercise" data-id="${esc(exercise.id)}">
+        ${exerciseThumbnail(exercise)}
         <span class="library-main">
           <span class="library-name">
             ${esc(exercise.name)}

@@ -25,7 +25,7 @@
  * emitted here, and is disabled wholesale under prefers-reduced-motion.
  */
 
-import { esc } from "./ui.js";
+import { esc, icon } from "./ui.js";
 
 /**
  * Movement classes. Derived from the dataset's real vocabulary, checked in this
@@ -362,6 +362,23 @@ export function muscleDiagram(exercise, opts = {}) {
   </g>
   ${labels}
 </svg>`;
+}
+
+/**
+ * Compact decorative artwork for exercise lists and the live logger.
+ *
+ * RepDB's licensed local stills are reused at list size; entries without one
+ * get the same small local dumbbell mark. The adjacent exercise name supplies
+ * the accessible label, so the thumbnail itself is hidden from assistive tech.
+ * Full attribution and pose controls remain in the exercise detail sheet.
+ */
+export function exerciseThumbnail(exercise) {
+  const poses = exercise?.media?.provider === "repdb" ? exercise.media.poses : null;
+  const url = poses?.start || poses?.main || poses?.peak || "";
+  if (url) {
+    return `<span class="exercise-thumb has-image" aria-hidden="true"><img src="${esc(url)}" alt="" loading="lazy" decoding="async" width="52" height="52" /></span>`;
+  }
+  return `<span class="exercise-thumb" aria-hidden="true">${icon("dumbbell")}</span>`;
 }
 
 /**

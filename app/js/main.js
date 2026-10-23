@@ -25,10 +25,10 @@ import {
 } from "./motion.js";
 
 import { renderHome } from "./views/home.js";
-import { renderWorkout, PICKER_CAP } from "./views/workout.js";
+import { renderWorkout, renderPickerRow, PICKER_CAP } from "./views/workout.js";
 import { renderHistory } from "./views/history.js";
 import { renderStats } from "./views/stats.js";
-import { renderLibrary, renderExerciseDetail, RESULT_CAP } from "./views/library.js";
+import { renderLibrary, renderLibraryRow, renderExerciseDetail, RESULT_CAP } from "./views/library.js";
 import { renderSettings } from "./views/settings.js";
 
 const store = new Store();
@@ -94,7 +94,7 @@ function currentElapsed() {
  * the OS via the media query in the token block; light and dark pin it.
  */
 function applyTheme() {
-  const theme = store.settings.theme ?? "dark";
+  const theme = store.settings.theme ?? "light";
   const root = document.documentElement;
   if (theme === "auto") {
     root.removeAttribute("data-theme");
@@ -377,7 +377,7 @@ const actions = {
     if (recordDetail) {
       const target =
         $('[data-focus-key="set-row-' + el.dataset.entry + "-" + el.dataset.set + '"]') ||
-        $(".logger-clock") ||
+        $(".logger-metrics") ||
         $("#view-outlet");
       celebrateRecord(target, recordDetail);
     }
@@ -653,17 +653,17 @@ function updateSetRowInPlace(input) {
     const oneRm = weight > 0 && reps > 0 ? estimatedOneRepMax(weight, reps) : 0;
     oneRmNode.textContent = oneRm > 0 ? compactNumber(oneRm) : "—";
   }
-  const headVolume = $('.logger-clock span');
-  if (headVolume) {
-    const active = store.activeWorkout();
-    if (active) {
-      const doneSets = active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
-      const volume = active.exercises.reduce(
-        (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
-        0,
-      );
-      headVolume.textContent = `${doneSets} sets · ${compactNumber(volume)} ${store.settings.units}`;
-    }
+  const active = store.activeWorkout();
+  if (active) {
+    const doneSets = active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
+    const volume = active.exercises.reduce(
+      (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
+      0,
+    );
+    const volumeNode = $(".logger-metrics > span:nth-child(2) strong");
+    const setsNode = $(".logger-metrics > span:nth-child(3) strong");
+    if (volumeNode) volumeNode.textContent = `${compactNumber(volume)} ${store.settings.units}`;
+    if (setsNode) setsNode.textContent = String(doneSets);
   }
 }
 
@@ -719,18 +719,7 @@ function filterPicker() {
   const shown = results.slice(0, PICKER_CAP);
 
   list.innerHTML = shown.length
-    ? shown
-        .map((e) => {
-          const secondary = e.secondaryMuscles?.length ? e.secondaryMuscles.slice(0, 2).join(", ") : "";
-          return `
-      <li class="picker-row">
-        <button data-action="pick-exercise" data-exercise="${esc(e.id)}">
-          <span class="picker-name">${esc(e.name)}${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}</span>
-          <span class="picker-meta">${esc(e.muscle)} · ${esc(e.equipment)}${secondary ? ` · +${esc(secondary)}` : ""}</span>
-        </button>
-      </li>`;
-        })
-        .join("")
+    ? shown.map((exercise) => renderPickerRow(exercise)).join("")
     : `<li class="picker-empty">No exercises match that search.</li>`;
 
   if (note) {
@@ -811,38 +800,8 @@ function filterLibraryList() {
   // Zero results changes the whole view (empty state plus a create affordance),
   // so hand back to a full render rather than patching the list in place.
   if (results.length === 0) return render();
-  list.innerHTML = results.slice(0, RESULT_CAP).map(libraryRowHtml).join("");
+  list.innerHTML = results.slice(0, RESULT_CAP).map((exercise) => renderLibraryRow(exercise)).join("");
   updateResultNote(results.length);
-}
-
-/** Row markup shared with views/library.js so in-place filtering stays in sync. */
-function libraryRowHtml(e) {
-  const secondary = e.secondaryMuscles?.length ? e.secondaryMuscles.slice(0, 3).join(", ") : "";
-  return `
-    <li class="library-row">
-      <button class="library-open" data-action="open-exercise" data-id="${esc(e.id)}">
-        <span class="library-main">
-          <span class="library-name">
-            ${esc(e.name)}
-            ${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}
-            ${e.media?.provider === "repdb"
-              ? `<em class="pill pill-data">illustrated</em>`
-              : e.source === "dataset" || e.source === "repdb"
-                ? `<em class="pill pill-data">catalogue</em>`
-                : ""}
-          </span>
-          <span class="library-meta">
-            <span class="badge badge-${esc(e.muscle)}">${esc(e.muscle)}</span>
-            <span class="equip">${esc(e.equipment)}</span>
-            ${e.target ? `<span class="target">target: ${esc(e.target)}</span>` : ""}
-            ${secondary ? `<span class="secondary">+ ${esc(secondary)}</span>` : ""}
-            ${e.note ? `<span class="note">${icon("info")} ${esc(e.note)}</span>` : ""}
-          </span>
-        </span>
-        <span class="library-go">${icon("chevron")}</span>
-      </button>
-      ${e.custom ? `<button class="icon-btn" data-action="delete-custom" data-id="${esc(e.id)}" aria-label="Delete ${esc(e.name)}">${icon("trash")}</button>` : ""}
-    </li>`;
 }
 
 function updateResultNote(total) {

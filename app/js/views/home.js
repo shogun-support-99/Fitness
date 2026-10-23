@@ -6,7 +6,8 @@
  */
 
 import { compactNumber, personalRecords, relativeTime, streaks, workoutDurationMinutes, workoutSetCount, workoutVolume } from "../stats.js";
-import { emptyState, esc, icon, muscleBadge, statTile } from "../ui.js";
+import { emptyState, esc, icon, statTile } from "../ui.js";
+import { renderRoutineCards } from "./routines.js";
 
 export function renderHome(store) {
   const active = store.activeWorkout();
@@ -25,14 +26,12 @@ export function renderHome(store) {
     <section class="view view-home">
       <header class="view-head">
         <div>
-          <h1>Today</h1>
+          <h1>Home</h1>
           <p class="view-subline">${esc(homeSubline(streak, completed))}</p>
         </div>
       </header>
 
-      ${renderTicker(store, completed)}
-
-      ${active ? renderActiveBanner(active, index) : renderStartPanel(store, completed)}
+      ${active ? renderActiveBanner(active, store.settings.units) : renderStartPanel(store)}
 
       <div class="tile-grid">
         ${statTile({ label: "This week", value: compactNumber(weekVolume), unit: "kg", hint: `${lastSevenDays.length} session${lastSevenDays.length === 1 ? "" : "s"}` })}
@@ -52,7 +51,7 @@ export function renderHome(store) {
                 title: "No sessions logged yet",
                 body: "Start your first workout and IronLog will track every set, weight and personal record from here on.",
               })
-            : `<ul class="session-list">${recent.map((w) => renderSessionRow(w, index)).join("")}</ul>`
+            : `<ul class="session-list">${recent.map((w) => renderSessionRow(w, index, store.settings.units)).join("")}</ul>`
         }
       </section>
     </section>`;
@@ -130,7 +129,7 @@ function renderTicker(store, completed) {
     </div>`;
 }
 
-function renderActiveBanner(workout, index) {
+function renderActiveBanner(workout, units) {
   const sets = workoutSetCount(workout);
   const volume = workoutVolume(workout);
   const elapsed = Date.now() - new Date(workout.startedAt).getTime();
@@ -139,7 +138,7 @@ function renderActiveBanner(workout, index) {
       <div class="active-banner-text">
         <span class="pill pill-live"><span class="dot"></span>In progress</span>
         <h2>${esc(workout.name)}</h2>
-        <p>${workout.exercises.length} exercise${workout.exercises.length === 1 ? "" : "s"} · ${sets} set${sets === 1 ? "" : "s"} · ${compactNumber(volume)} kg · ${Math.max(1, Math.round(elapsed / 60000))} min</p>
+        <p>${workout.exercises.length} exercise${workout.exercises.length === 1 ? "" : "s"} · ${sets} set${sets === 1 ? "" : "s"} · ${compactNumber(volume)} ${esc(units)} · ${Math.max(1, Math.round(elapsed / 60000))} min</p>
       </div>
       <a class="btn btn-primary btn-lg" href="#/workout" data-action="resume-workout">
         ${icon("play")} Resume
@@ -147,82 +146,61 @@ function renderActiveBanner(workout, index) {
     </div>`;
 }
 
-function renderStartPanel(store, completed) {
+function renderStartPanel(store) {
   const template = store.lastWorkoutTemplate();
-  const quickStarts = [
-    { label: "Push", muscles: ["chest", "shoulders", "triceps"] },
-    { label: "Pull", muscles: ["back", "biceps"] },
-    { label: "Legs", muscles: ["quads", "hamstrings", "glutes"] },
-    { label: "Full body", muscles: [] },
-  ];
-
   return `
-    <div class="start-panel">
-      <div class="start-panel-copy">
-        <h2>Your next session</h2>
-        <p>Start empty, repeat your last workout, or build from a split.</p>
-      </div>
-      <button class="btn btn-primary btn-xl" data-action="start-workout">
-        ${icon("bolt")} Start empty workout
-      </button>
-
-      ${
-        template
-          ? `<button class="btn btn-ghost btn-wide" data-action="repeat-last">
-               ${icon("history")} Repeat last session
-               <span class="btn-sub">${esc(template.exercises.length)} exercises</span>
-             </button>`
-          : ""
-      }
-
-      <div class="quick-starts">
-        <p class="group-label">Or start from a split</p>
-        <div class="chip-row">
-          ${quickStarts
-            .map(
-              (q) =>
-                `<button class="chip" data-action="start-split" data-split="${esc(q.label)}" data-muscles="${esc(q.muscles.join(","))}">${esc(q.label)}</button>`,
-            )
-            .join("")}
+    <div class="home-training-grid">
+      <section class="start-panel">
+        <div class="start-panel-copy">
+          <span class="section-label">Quick start</span>
+          <h2>Ready when you are.</h2>
+          <p>Log weights and reps as you go. Your rest timer and previous numbers are built in.</p>
         </div>
-      </div>
+        <button class="btn btn-primary btn-lg btn-wide" data-action="start-workout">
+          ${icon("plus")} Start empty workout
+        </button>
+        ${template ? `<button class="btn btn-sub btn-wide" data-action="repeat-last">${icon("history")} Repeat last session <span class="btn-sub">${esc(template.exercises.length)} ${template.exercises.length === 1 ? "exercise" : "exercises"}</span></button>` : ""}
+      </section>
+      <section class="routine-section" aria-labelledby="home-routines-title">
+        <div class="section-title-row"><h2 id="home-routines-title">Routines</h2><a class="link" href="#/workout">View all ${icon("chevron")}</a></div>
+        ${renderRoutineCards()}
+      </section>
     </div>`;
 }
 
-function renderSessionRow(workout, index) {
+function renderSessionRow(workout, index, units) {
   const when = relativeTime(workout.endedAt ?? workout.startedAt);
   const summary = workout.summary ?? {
     volume: Math.round(workoutVolume(workout)),
     sets: workoutSetCount(workout),
     minutes: workoutDurationMinutes(workout),
   };
-  const muscles = [...new Set(workout.exercises.map((e) => index[e.exerciseId]?.muscle).filter(Boolean))];
   const prCount = summary.records?.length ?? 0;
+  const exercises = workout.exercises.slice(0, 3);
 
   return `
     <li>
       <a class="session-row" href="#/history?id=${esc(workout.id)}">
-        <span class="session-date">
-          <strong>${esc(formatDay(workout.endedAt ?? workout.startedAt))}</strong>
-          <span>${esc(when)}</span>
-        </span>
+        <span class="session-avatar">${icon("dumbbell")}</span>
         <span class="session-body">
+          <span class="session-byline"><strong>Your workout</strong><span>${esc(when)}</span></span>
           <span class="session-name">${esc(workout.name)}</span>
-          <span class="session-meta">
-            ${summary.sets} sets · ${compactNumber(summary.volume)} kg · ${summary.minutes} min
-            ${prCount > 0 ? `<span class="pr-flag">${icon("trophy")} ${prCount} PR${prCount === 1 ? "" : "s"}</span>` : ""}
+          <span class="session-kpis">
+            <span><small>Time</small><b>${summary.minutes} min</b></span>
+            <span><small>Volume</small><b>${compactNumber(summary.volume)} ${esc(units)}</b></span>
+            <span><small>Records</small><b>${prCount || "—"}</b></span>
           </span>
-          <span class="badge-row">${muscles.slice(0, 4).map((m) => muscleBadge(m)).join("")}</span>
+          <span class="session-exercise-list">
+            ${exercises.map((entry) => {
+              const count = entry.sets.filter((set) => set.done).length;
+              return `<span><b>${count} set${count === 1 ? "" : "s"}</b> ${esc(index[entry.exerciseId]?.name ?? entry.exerciseId)}</span>`;
+            }).join("")}
+            ${workout.exercises.length > exercises.length ? `<small>See ${workout.exercises.length - exercises.length} more in history</small>` : ""}
+          </span>
         </span>
         <span class="session-go">${icon("chevron")}</span>
       </a>
     </li>`;
-}
-
-function formatDay(iso) {
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
 /**

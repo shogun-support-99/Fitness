@@ -1,22 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IronLog">
-  <!--
-    The mark is the object: a barbell drawn as ledger geometry, ink on stone
-    paper, with the one blue on the collar — the same rule the interface
-    follows, where the single hue goes on the data and nowhere else.
-    No filled tile, no letter in a square.
-  -->
-  <rect width="64" height="64" rx="8" fill="#f7f6f3"/>
-  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="7.25" fill="none" stroke="#d9d7d0" stroke-width="1.5"/>
-
-  <!-- Plates and bar, in ink. -->
-  <g stroke="#0f0f0f" stroke-width="4.5" stroke-linecap="round" fill="none">
-    <path d="M16 26v12"/>
-    <path d="M23 19v26"/>
-    <path d="M41 19v26"/>
-    <path d="M48 26v12"/>
+  <!-- Bright product mark shared by the app, landing page, manifest and social artwork. -->
+  <rect width="64" height="64" rx="16" fill="#e9f5fd"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="#d8ecfa"/>
+  <g stroke="#1b96e8" stroke-width="4.5" stroke-linecap="round" fill="none">
+    <path d="M13 25v14"/>
+    <path d="M21 17v30"/>
+    <path d="M43 17v30"/>
+    <path d="M51 25v14"/>
+    <path d="M21 32h22"/>
   </g>
-  <path d="M23 32h18" stroke="#0f0f0f" stroke-width="4.5" stroke-linecap="round"/>
-
-  <!-- The collar: the one hue, on the piece that holds the load. -->
-  <rect x="29" y="27.5" width="6" height="9" rx="1.5" fill="#1d5fbf"/>
 </svg>

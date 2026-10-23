@@ -8,8 +8,8 @@
       name="description"
       content="IronLog is an offline-first strength training log. Track exercises, sets, volume, rest and personal records. No account, no server, no tracking."
     />
-    <meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111315" media="(prefers-color-scheme: dark)" />
     <link rel="canonical" href="./" />
     <link rel="manifest" href="./manifest.json" />
     <link rel="icon" href="../assets/img/logo.svg" type="image/svg+xml" />
@@ -23,14 +23,14 @@
     <link rel="stylesheet" href="./css/app.css" />
     <link rel="stylesheet" href="./css/kinetic.css" />
     <script>
-      // Apply the saved appearance before first paint; new logs start in the
-      // crafted true-black theme, while existing preferences remain untouched.
+      // Apply the saved appearance before first paint. New logs use the bright,
+      // blue-accented product theme; existing light/dark preferences remain intact.
       try {
         const saved = JSON.parse(localStorage.getItem("ironlog.v1") || "null");
-        const theme = saved?.settings?.theme || "dark";
+        const theme = saved?.settings?.theme || "light";
         if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
       } catch {
-        document.documentElement.dataset.theme = "dark";
+        document.documentElement.dataset.theme = "light";
       }
     </script>
     <script type="module" src="./js/main.js" defer></script>
@@ -57,31 +57,31 @@
             </span>
             Home
           </a>
-          <a class="nav-item" data-route="workout" href="#/workout" aria-label="Logger">
+          <a class="nav-item" data-route="workout" href="#/workout" aria-label="Workout">
             <span class="nav-icon" aria-hidden="true">
               <svg class="icon" viewBox="0 0 24 24"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10" /></svg>
             </span>
-            Logger
+            Workout
           </a>
-          <a class="nav-item" data-route="history" href="#/history" aria-label="History">
+          <a class="nav-item" data-route="library" href="#/library" aria-label="Exercises">
+            <span class="nav-icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M4 5.5h7v13H4zM13 5.5h7v13h-7z" /></svg>
+            </span>
+            Exercises
+          </a>
+          <a class="nav-item" data-route="stats" href="#/stats" aria-label="Profile">
+            <span class="nav-icon" aria-hidden="true">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c.7-4 3.1-6 7-6s6.3 2 7 6" /></svg>
+            </span>
+            Profile
+          </a>
+          <a class="nav-item nav-item-secondary" data-route="history" href="#/history" aria-label="History">
             <span class="nav-icon" aria-hidden="true">
               <svg class="icon" viewBox="0 0 24 24"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4.5V10h5.5M12 7.5V12l3 1.8" /></svg>
             </span>
             History
           </a>
-          <a class="nav-item" data-route="stats" href="#/stats" aria-label="Progress">
-            <span class="nav-icon" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M4 19V10M10 19V5M16 19v-6M22 19H2" /></svg>
-            </span>
-            Progress
-          </a>
-          <a class="nav-item" data-route="library" href="#/library" aria-label="Library">
-            <span class="nav-icon" aria-hidden="true">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M4 5.5h7v13H4zM13 5.5h7v13h-7z" /></svg>
-            </span>
-            Library
-          </a>
-          <a class="nav-item" data-route="settings" href="#/settings" aria-label="Settings">
+          <a class="nav-item nav-item-secondary" data-route="settings" href="#/settings" aria-label="Settings">
             <span class="nav-icon" aria-hidden="true">
               <svg class="icon" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm8.4-3.2 1.9-1.5-1.9-3.3-2.3.7a7.6 7.6 0 0 0-1.6-.9L14.1 4h-4l-.4 2.5c-.6.2-1.1.5-1.6.9l-2.3-.7-1.9 3.3 1.9 1.5a7.9 7.9 0 0 0 0 1.8L3.9 15l1.9 3.3 2.3-.7c.5.4 1 .7 1.6.9l.4 2.5h4l.4-2.5c.6-.2 1.1-.5 1.6-.9l2.3.7 1.9-3.3-1.9-1.5a7.9 7.9 0 0 0 0-1.8Z" /></svg>
             </span>
@@ -97,15 +97,18 @@
 
       <div class="workspace">
         <header class="app-topbar">
-          <a class="topbar-context" href="../" aria-label="About IronLog">
+          <a class="topbar-context" href="#/home" aria-label="IronLog home">
             <svg class="topbar-mark" viewBox="0 0 32 32" aria-hidden="true">
               <path d="M6 12v8M10 8v16M22 8v16M26 12v8M10 16h12" />
             </svg>
-            <span>Personal training log</span>
+            <span>IronLog</span>
           </a>
           <div class="topbar-actions">
-            <span class="local-status"><span aria-hidden="true"></span>Local data only</span>
-            <a class="topbar-about" href="../">About IronLog <span aria-hidden="true">↗</span></a>
+            <span class="local-status"><span aria-hidden="true"></span>Saved locally</span>
+            <a class="topbar-about" href="../">About <span aria-hidden="true">↗</span></a>
+            <a class="topbar-settings" href="#/settings" aria-label="Open settings">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Zm8.4-3.2 1.9-1.5-1.9-3.3-2.3.7a7.6 7.6 0 0 0-1.6-.9L14.1 4h-4l-.4 2.5c-.6.2-1.1.5-1.6.9l-2.3-.7-1.9 3.3 1.9 1.5a7.9 7.9 0 0 0 0 1.8L3.9 15l1.9 3.3 2.3-.7c.5.4 1 .7 1.6.9l.4 2.5h4l.4-2.5c.6-.2 1.1-.5 1.6-.9l2.3.7 1.9-3.3-1.9-1.5a7.9 7.9 0 0 0 0-1.8Z" /></svg>
+            </a>
           </div>
         </header>
         <main class="main" id="view-outlet" tabindex="-1"></main>

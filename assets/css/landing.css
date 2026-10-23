@@ -1,10 +1,9 @@
 /* ==========================================================================
-   IronLog — Cobalt Field / sentence-as-layout
+   IronLog — bright training product / interactive Hevy-inspired composition
 
-   One saturated field, white type, deep-blue product surfaces and a yellow
-   action. The page's imagery is the product itself: working controls, rest,
-   records and an original bar-path diagram. Two held scenes carry the motion;
-   the sections between them are deliberately quieter.
+   Cool-white space, crisp blue actions and working product surfaces carry the
+   page. Two held scenes preserve the authored motion while the visual language
+   matches the app: simple cards, thin rules, blue progress and green set ticks.
    ========================================================================== */
 
 @font-face {
@@ -24,24 +23,25 @@
 }
 
 :root {
-  --bg: #0034eb;
-  --surface: #002fd6;
-  --ink: #ffffff;
-  --muted: #c5d0ff;
-  --soft: #9fb4ff;
-  --action: #e9e34a;
-  --action-ink: #101000;
-  --dark-ink: #071335;
-  --rule: 2px;
-  --gutter: clamp(16px, 2.2vw, 32px);
-  --section-space: clamp(96px, 12vw, 184px);
-  --radius: 4px;
+  --bg: #ffffff;
+  --surface: #f4f6f8;
+  --ink: #191b1f;
+  --muted: #68717b;
+  --soft: #96a0aa;
+  --action: #1b96e8;
+  --action-ink: #ffffff;
+  --dark-ink: #101214;
+  --done: #4bbb6b;
+  --rule: 1px;
+  --gutter: clamp(18px, 3.2vw, 48px);
+  --section-space: clamp(88px, 10vw, 152px);
+  --radius: 12px;
   --font: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
   --ease-spring: cubic-bezier(0.2, 1.4, 0.4, 1);
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 *,
@@ -1698,6 +1698,214 @@ svg {
 @keyframes answer-in {
   from { opacity: 0; transform: translateY(-8px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Bright product refinement: shared with every app route ───────────── */
+
+.brand-icon {
+  color: var(--action);
+  stroke-linecap: round;
+}
+
+.button,
+.ui-action {
+  border-width: 1px;
+  border-radius: 8px;
+}
+
+.button:hover {
+  background: #0875bb;
+  color: #ffffff;
+  border-color: #0875bb;
+}
+
+.nav-links a:hover,
+.text-link:hover {
+  color: var(--action);
+}
+
+.hero-title,
+.showcase-title,
+.section-heading,
+.stats-heading,
+.library-heading,
+.faq-intro h2,
+.final-cta h2 {
+  font-weight: 650;
+}
+
+.hero-half-right {
+  color: var(--action);
+}
+
+.reel-frame {
+  border: 1px solid #e0e5e9;
+  border-radius: 16px;
+  background: #ffffff;
+  box-shadow: 0 24px 65px rgba(25, 43, 56, 0.12);
+}
+
+.ui-kicker,
+.sample-previous,
+.rest-next,
+.ui-step,
+.rest-caption,
+.progress-total span,
+.sample-chart i {
+  color: #68717b;
+}
+
+.sample-input {
+  border-width: 1px;
+  border-color: #d7dde3;
+  border-radius: 8px;
+  background: #f4f6f8;
+}
+
+.sample-input:focus-within {
+  border-color: var(--action);
+}
+
+.sample-pr {
+  border: 0;
+  border-radius: 8px;
+}
+
+.rest-track > span,
+.sample-chart > span {
+  background: var(--action);
+}
+
+.sample-chart > span {
+  border-radius: 4px 4px 0 0;
+}
+
+.sample-chart > span:nth-child(2) {
+  background: var(--done);
+}
+
+.pr-stamp {
+  border-radius: 6px;
+  background: #e9f5fd;
+  color: #0875bb;
+}
+
+.picture-word {
+  border-width: 1px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.picture-word-pr {
+  background: #e9f5fd;
+  color: #0875bb;
+  border-color: #e9f5fd;
+}
+
+.showcase-frame {
+  border: 1px solid #e0e5e9;
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: 0 22px 60px rgba(25, 43, 56, 0.1);
+}
+
+.session-exercise,
+.session-rest {
+  border: 1px solid #e4e8ec;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.session-exercise h3 {
+  color: #0875bb;
+}
+
+.session-set {
+  border-radius: 6px;
+}
+
+.session-set.is-done {
+  background: #e9f8ed;
+}
+
+.session-set.is-done i {
+  border-color: var(--done);
+  background: var(--done);
+  color: #ffffff;
+}
+
+.session-record {
+  border-radius: 10px;
+}
+
+.stats-heading span,
+.ledger-number {
+  color: var(--action);
+}
+
+.exercise-fragment {
+  border: 1px solid #e0e5e9;
+}
+
+.exercise-table {
+  gap: 0;
+}
+
+.exercise-row {
+  padding-inline: 4px;
+  border-bottom: 1px solid #e5e9ed;
+}
+
+.exercise-row:nth-child(4) {
+  margin-top: 0;
+}
+
+.exercise-row:hover {
+  color: var(--action);
+}
+
+.faq-list details {
+  border-bottom: 1px solid #e0e5e9;
+}
+
+.final-cta {
+  min-height: 82svh;
+  background: var(--action);
+  color: #ffffff;
+}
+
+.final-cta .button {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #0875bb;
+}
+
+.final-cta .button:hover {
+  border-color: #ffffff;
+  background: #e9f5fd;
+  color: #075f96;
+}
+
+.final-cta .text-link,
+.footer-bottom a {
+  color: inherit;
+}
+
+.final-cta > p,
+.cta-actions > span {
+  color: #d9efff;
+}
+
+.cta-bar-line {
+  background: #ffffff;
+}
+
+.cta-plate {
+  border-color: #ffffff;
+}
+
+.site-footer {
+  min-height: 72svh;
 }
 
 /* ── Tablet ────────────────────────────────────────────────────────────── */

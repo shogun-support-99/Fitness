@@ -41,9 +41,9 @@ function emptyDocument() {
       units: "kg",
       restSeconds: 120,
       autoStartRestTimer: true,
-      // True-black is the crafted default; light and system remain equally
-      // supported and the choice is persisted per browser.
-      theme: "dark",
+      // Bright neutral surfaces are the default; dark and system appearances
+      // are equally supported and the choice is persisted per browser.
+      theme: "light",
       instructionLanguage: "en",
     },
     createdAt: new Date().toISOString(),

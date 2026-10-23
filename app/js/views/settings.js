@@ -20,7 +20,8 @@ export function renderSettings(store) {
   return `
     <section class="view view-settings">
       <header class="view-head">
-        <div><h1>Settings</h1></div>
+        <div><h1>Settings</h1><p class="view-subline">Workout preferences, appearance and your local data.</p></div>
+        <a class="link" href="#/stats">${icon("user")} Profile</a>
       </header>
 
       <section class="panel">
@@ -66,15 +67,15 @@ export function renderSettings(store) {
           ]
             .map(
               ([value, label]) => `
-            <button role="radio" aria-checked="${(s.theme ?? "dark") === value}"
-                    class="segment ${(s.theme ?? "dark") === value ? "is-active" : ""}"
+            <button role="radio" aria-checked="${(s.theme ?? "light") === value}"
+                    class="segment ${(s.theme ?? "light") === value ? "is-active" : ""}"
                     data-action="set-theme" data-theme="${value}">${label}</button>`,
             )
             .join("")}
         </div>
         <p class="panel-hint">
-          Choose cool-white light, true-black dark, or match your system. Both themes keep
-          cobalt on the data and primary controls inverted for a clear next action.
+          Choose a bright training log, a low-light theme, or match your system. Every theme
+          uses the same clear blue actions and green completed-set feedback.
         </p>
       </section>
 

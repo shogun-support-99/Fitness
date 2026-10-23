@@ -7,6 +7,8 @@
 
 import { compactNumber, estimatedOneRepMax } from "../stats.js";
 import { emptyState, esc, icon } from "../ui.js";
+import { exerciseThumbnail } from "../diagrams.js";
+import { renderRoutineCards } from "./routines.js";
 
 /** Rows built in the add-exercise sheet before search takes over. */
 export const PICKER_CAP = 80;
@@ -18,16 +20,18 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
 
   if (!workout) {
     return `
-      <section class="view view-workout">
+      <section class="view view-workout view-workout-hub">
         <header class="view-head">
-          <div><h1>No active workout</h1></div>
+          <div><h1>Workout</h1><p class="view-subline">Build a session or start from a routine.</p></div>
         </header>
-        ${emptyState({
-          icon: "dumbbell",
-          title: "Nothing in progress",
-          body: "Start a session from the home screen to begin logging sets.",
-          action: `<button class="btn btn-primary" data-action="start-workout">${icon("bolt")} Start workout</button>`,
-        })}
+        <section class="quick-start-panel">
+          <span class="section-label">Quick start</span>
+          <button class="btn btn-primary btn-wide btn-lg" data-action="start-workout">${icon("plus")} Start empty workout</button>
+        </section>
+        <section class="routine-section" aria-labelledby="workout-routines-title">
+          <div class="section-title-row"><h2 id="workout-routines-title">Routines</h2><a class="link" href="#/library">Explore exercises ${icon("chevron")}</a></div>
+          ${renderRoutineCards()}
+        </section>
       </section>`;
   }
 
@@ -41,13 +45,17 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
     <section class="view view-workout">
       <header class="logger-head">
         <div class="logger-title">
-          <span class="pill pill-live"><span class="dot"></span>Live</span>
+          <span class="logger-kicker">Log workout</span>
           <input class="logger-name" value="${esc(workout.name)}" data-action="rename-workout"
                  aria-label="Workout name" maxlength="60" />
         </div>
-        <div class="logger-clock">
-          <strong data-role="elapsed">${esc(elapsed)}</strong>
-          <span>${doneSets} sets · ${compactNumber(volume)} ${esc(units)}</span>
+        <button class="btn btn-primary logger-finish" data-action="complete-workout" ${doneSets === 0 ? "disabled" : ""}>
+          Finish
+        </button>
+        <div class="logger-metrics" aria-label="Current workout totals">
+          <span><small>Duration</small><strong data-role="elapsed">${esc(elapsed)}</strong></span>
+          <span><small>Volume</small><strong>${compactNumber(volume)} ${esc(units)}</strong></span>
+          <span><small>Sets</small><strong>${doneSets}</strong></span>
         </div>
       </header>
 
@@ -69,10 +77,7 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
         : ""}
 
       <div class="logger-actions">
-        <button class="btn btn-danger-ghost" data-action="discard-workout">${icon("trash")} Discard</button>
-        <button class="btn btn-primary btn-lg" data-action="complete-workout" ${doneSets === 0 ? "disabled" : ""}>
-          ${icon("check")} Finish workout
-        </button>
+        <button class="btn btn-danger-ghost" data-action="discard-workout">${icon("trash")} Discard workout</button>
       </div>
     </section>
 
@@ -107,6 +112,7 @@ function renderExerciseCard(entry, index, store, units) {
   return `
     <article class="exercise-card" data-entry="${esc(entry.id)}">
       <header class="exercise-head">
+        ${exercise ? exerciseThumbnail(exercise) : ""}
         <div>
           <h3>${esc(name)}</h3>
           <p class="exercise-sub">
@@ -118,6 +124,10 @@ function renderExerciseCard(entry, index, store, units) {
           ${icon("trash")}
         </button>
       </header>
+
+      <button class="exercise-rest" data-action="rest-now" aria-label="Start rest timer for ${esc(name)}">
+        ${icon("timer")} Rest timer: ${store.settings.restSeconds}s
+      </button>
 
       <div class="set-table" role="table" aria-label="${esc(name)} sets">
         <div class="set-row set-head" role="row">
@@ -133,11 +143,8 @@ function renderExerciseCard(entry, index, store, units) {
       </div>
 
       <div class="exercise-foot">
-        <button class="btn btn-small btn-outline" data-action="add-set" data-entry="${esc(entry.id)}" data-previous="true">
+        <button class="btn btn-small btn-sub btn-wide add-set-button" data-action="add-set" data-entry="${esc(entry.id)}" data-previous="true">
           ${icon("plus")} Add set
-        </button>
-        <button class="btn btn-small btn-ghost" data-action="rest-now" aria-label="Start rest timer">
-          ${icon("timer")} Rest
         </button>
       </div>
     </article>`;
@@ -215,16 +222,19 @@ function pickerNote(total, shown) {
   return `Showing ${shown} of ${total} — search to find a specific exercise.`;
 }
 
-function renderPickerRow(exercise) {
+export function renderPickerRow(exercise) {
   const secondary = exercise.secondaryMuscles?.length ? exercise.secondaryMuscles.slice(0, 2).join(", ") : "";
   return `
     <li class="picker-row" data-name="${esc(exercise.name.toLowerCase())}" data-muscle="${esc(exercise.muscle)}" data-equipment="${esc(exercise.equipment)}" data-target="${esc(exercise.target ?? "")}">
       <button data-action="pick-exercise" data-exercise="${esc(exercise.id)}">
+        ${exerciseThumbnail(exercise)}
+        <span class="picker-copy">
         <span class="picker-name">
           ${esc(exercise.name)}
           ${exercise.custom ? `<em class="pill pill-custom">custom</em>` : ""}
         </span>
         <span class="picker-meta">${esc(exercise.muscle)} · ${esc(exercise.equipment)}${secondary ? ` · +${esc(secondary)}` : ""}</span>
+        </span>
       </button>
     </li>`;
 }
