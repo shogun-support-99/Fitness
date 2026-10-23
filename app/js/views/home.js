@@ -31,12 +31,12 @@ export function renderHome(store) {
         </div>
       </header>
 
-      ${active ? renderActiveBanner(active, store.settings.units) : renderStartPanel(store)}
+      ${active ? renderActiveBanner(active, store.settings.units) : renderStartPanel(store, lastSevenDays.length)}
 
       <div class="tile-grid">
-        ${statTile({ label: "This week", value: compactNumber(weekVolume), unit: "kg", hint: `${lastSevenDays.length} session${lastSevenDays.length === 1 ? "" : "s"}` })}
-        ${statTile({ label: "Workouts", value: String(completed.length), hint: "all time" })}
-        ${statTile({ label: "Best streak", value: `${streak.best}`, unit: "d", hint: `${streak.activeDays} active days` })}
+        ${statTile({ label: "This week", value: compactNumber(weekVolume), unit: "kg", hint: `${lastSevenDays.length} session${lastSevenDays.length === 1 ? "" : "s"}`, tone: "tone-sky" })}
+        ${statTile({ label: "Workouts", value: String(completed.length), hint: "all time", tone: "tone-violet" })}
+        ${statTile({ label: "Best streak", value: `${streak.best}`, unit: "d", hint: `${streak.activeDays} active days`, tone: "tone-orange" })}
       </div>
 
       <section class="panel">
@@ -134,7 +134,7 @@ function renderActiveBanner(workout, units) {
   const volume = workoutVolume(workout);
   const elapsed = Date.now() - new Date(workout.startedAt).getTime();
   return `
-    <div class="active-banner" role="status">
+    <div class="active-banner" role="status" data-tilt data-reveal="rise">
       <div class="active-banner-text">
         <span class="pill pill-live"><span class="dot"></span>In progress</span>
         <h2>${esc(workout.name)}</h2>
@@ -146,23 +146,41 @@ function renderActiveBanner(workout, units) {
     </div>`;
 }
 
-function renderStartPanel(store) {
+function renderStartPanel(store, weekCount) {
   const template = store.lastWorkoutTemplate();
+  const goalProgress = Math.min(100, Math.round((weekCount / 3) * 100));
   return `
     <div class="home-training-grid">
-      <section class="start-panel">
+      <section class="start-panel training-hero" data-tilt data-reveal="rise">
         <div class="start-panel-copy">
-          <span class="section-label">Quick start</span>
-          <h2>Ready when you are.</h2>
-          <p>Log weights and reps as you go. Your rest timer and previous numbers are built in.</p>
+          <span class="energy-badge">${icon("bolt")} Training mode</span>
+          <h2>Small sets. <span>Big momentum.</span></h2>
+          <p>Pick a routine, beat your previous numbers, and let every completed set move you forward.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" data-action="start-workout">
+              ${icon("play")} Start empty workout ${icon("chevron")}
+            </button>
+            ${template ? `<button class="btn btn-sub" data-action="repeat-last">${icon("history")} Repeat last <span class="btn-sub">${esc(template.exercises.length)} ${template.exercises.length === 1 ? "exercise" : "exercises"}</span></button>` : ""}
+          </div>
         </div>
-        <button class="btn btn-primary btn-lg btn-wide" data-action="start-workout">
-          ${icon("plus")} Start empty workout
-        </button>
-        ${template ? `<button class="btn btn-sub btn-wide" data-action="repeat-last">${icon("history")} Repeat last session <span class="btn-sub">${esc(template.exercises.length)} ${template.exercises.length === 1 ? "exercise" : "exercises"}</span></button>` : ""}
+        <div class="hero-goal" style="--goal-offset:${100 - goalProgress}">
+          <div class="goal-ring" role="img" aria-label="${weekCount} of 3 weekly momentum sessions completed">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="goal-ring-track" cx="60" cy="60" r="50" pathLength="100" />
+              <circle class="goal-ring-value" cx="60" cy="60" r="50" pathLength="100" />
+            </svg>
+            <span class="goal-value"><strong>${weekCount}<small>/3</small></strong><span>this week</span></span>
+          </div>
+          <div class="goal-dots" aria-hidden="true">
+            ${[1, 2, 3].map((n) => `<span class="${weekCount >= n ? "is-reached" : ""}">${weekCount >= n ? icon("check") : n}</span>`).join("")}
+          </div>
+          <span class="goal-caption">${weekCount >= 3 ? "Goal complete — nice work" : "3-session momentum goal"}</span>
+        </div>
+        <span class="hero-spark hero-spark-one" aria-hidden="true">${icon("bolt")}</span>
+        <span class="hero-spark hero-spark-two" aria-hidden="true">${icon("trophy")}</span>
       </section>
       <section class="routine-section" aria-labelledby="home-routines-title">
-        <div class="section-title-row"><h2 id="home-routines-title">Routines</h2><a class="link" href="#/workout">View all ${icon("chevron")}</a></div>
+        <div class="section-title-row"><div><span class="section-label">Jump straight in</span><h2 id="home-routines-title">Choose your routine</h2></div><a class="link" href="#/workout">View all ${icon("chevron")}</a></div>
         ${renderRoutineCards()}
       </section>
     </div>`;

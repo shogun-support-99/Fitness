@@ -58,10 +58,10 @@ export function renderStats(store) {
 
       <div class="section-title-row"><h2>Statistics</h2><span class="panel-note">All time</span></div>
       <div class="tile-grid tile-grid-4">
-        ${statTile({ label: "Total volume", value: compactNumber(life.volume), unit: units, tone: "tone-accent" })}
-        ${statTile({ label: "Total sets", value: compactNumber(life.sets) })}
-        ${statTile({ label: "Time training", value: String(life.hours), unit: "h" })}
-        ${statTile({ label: "Current streak", value: String(streak.current), unit: "d", hint: `best ${streak.best}d` })}
+        ${statTile({ label: "Total volume", value: compactNumber(life.volume), unit: units, tone: "tone-sky" })}
+        ${statTile({ label: "Total sets", value: compactNumber(life.sets), tone: "tone-violet" })}
+        ${statTile({ label: "Time training", value: String(life.hours), unit: "h", tone: "tone-mint" })}
+        ${statTile({ label: "Current streak", value: String(streak.current), unit: "d", hint: `best ${streak.best}d`, tone: "tone-orange" })}
       </div>
 
       <section class="panel">
