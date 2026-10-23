@@ -19,6 +19,7 @@ import {
   initChartMotion,
   initPressFeedback,
   initTicker,
+  initTilt,
   drawTick,
   celebrateRecord,
   prefersReducedMotion,
@@ -67,6 +68,8 @@ function startMotion(root) {
   motionTeardowns.push(initCounters(root));
   motionTeardowns.push(initChartMotion(root));
   motionTeardowns.push(initTicker(root));
+  const hero = root.querySelector("[data-tilt]");
+  if (hero) motionTeardowns.push(initTilt(hero, { max: 2.4 }));
 }
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -122,7 +125,7 @@ function render(navigation = router.current) {
     outlet.classList.remove("is-entering");
     void outlet.offsetWidth;
     outlet.classList.add("is-entering");
-    routeAnimationTimer = window.setTimeout(() => outlet.classList.remove("is-entering"), 320);
+    routeAnimationTimer = window.setTimeout(() => outlet.classList.remove("is-entering"), 420);
   }
 
   // Motion is wired after the markup exists, and torn down before the next
@@ -358,7 +361,7 @@ const actions = {
           // Real data only: this fires because a computed 1RM beat the session's
           // previous best, never on a timer or for decoration.
           recordDetail = {
-            exercise: entry.name || "This lift",
+            exercise: store.exerciseIndex()[entry.exerciseId]?.name || "This lift",
             value: compactNumber(oneRm),
             unit: store.settings.units,
             kind: "session-best",
@@ -368,18 +371,19 @@ const actions = {
     }
     if (next && store.settings.autoStartRestTimer) restTimer.start(store.settings.restSeconds);
 
-    if (next) {
-      // Feedback before the re-render, on the row the user just touched.
-      const row = el.closest(".set-row");
-      if (row) drawTick(row);
-    }
     render();
+
+    // Animate the replacement row, not the detached row from before render().
+    // This keeps the check draw, colour pop and earned PR burst visible.
+    const updatedRow = $$(".exercise-card[data-entry] .set-row[data-set]").find((row) =>
+      row.dataset.set === el.dataset.set && row.closest(".exercise-card")?.dataset.entry === el.dataset.entry,
+    );
+    if (next && updatedRow) {
+      updatedRow.classList.add("just-completed");
+      drawTick(updatedRow);
+    }
     if (recordDetail) {
-      const target =
-        $('[data-focus-key="set-row-' + el.dataset.entry + "-" + el.dataset.set + '"]') ||
-        $(".logger-metrics") ||
-        $("#view-outlet");
-      celebrateRecord(target, recordDetail);
+      celebrateRecord(updatedRow || $(".logger-metrics") || $("#view-outlet"), recordDetail);
     }
   },
 
@@ -675,6 +679,7 @@ function showSummary(workout, summary) {
     <div class="summary">
       <span class="summary-mark">${icon(records.length > 0 ? "trophy" : "check")}</span>
       <h2>Session saved</h2>
+      <p class="summary-cheer">Every set counts. Nice work.</p>
       <p class="summary-name">${esc(workout.name)}</p>
       <div class="summary-grid">
         <div><strong>${compactNumber(summary.volume)}</strong><span>${esc(store.settings.units)} volume</span></div>
@@ -922,7 +927,7 @@ store.subscribe((event) => {
 
 function boot() {
   applyTheme();
-  initPressFeedback(document);
+  initPressFeedback(document, { selector: ".btn, .routine-card, .chip, .nav-item, .icon-btn, .timer-btn, .tick" });
   if (!globalThis.location.hash) globalThis.location.hash = "#/home";
   router.start();
 

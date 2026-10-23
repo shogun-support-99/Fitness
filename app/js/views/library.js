@@ -79,7 +79,7 @@ export function renderLibraryRow(exercise) {
     ? exercise.secondaryMuscles.slice(0, 3).join(", ")
     : "";
   return `
-    <li class="library-row">
+    <li class="library-row" data-muscle="${esc(exercise.muscle)}">
       <button class="library-open" data-action="open-exercise" data-id="${esc(exercise.id)}">
         ${exerciseThumbnail(exercise)}
         <span class="library-main">

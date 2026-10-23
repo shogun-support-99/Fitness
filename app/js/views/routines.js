@@ -1,24 +1,29 @@
 /**
  * Reusable routine shortcuts shared by Home and the Workout tab.
  *
- * These use the existing split action and curated exercise library, so every
- * card starts a real editable session rather than a decorative demo.
+ * Each split has a recognisable colour and icon while using the existing
+ * curated-library action. These are real editable sessions, not demo cards.
  */
 
 import { esc, icon } from "../ui.js";
 
 const ROUTINES = [
-  { label: "Push", detail: "Chest · Shoulders · Triceps", muscles: ["chest", "shoulders", "triceps"] },
-  { label: "Pull", detail: "Back · Biceps", muscles: ["back", "biceps"] },
-  { label: "Legs", detail: "Quads · Hamstrings · Glutes", muscles: ["quads", "hamstrings", "glutes"] },
-  { label: "Full body", detail: "Four foundational movements", muscles: ["chest", "back", "quads", "shoulders"] },
+  { label: "Push", slug: "push", detail: "Chest · Shoulders · Triceps", muscles: ["chest", "shoulders", "triceps"], icon: "dumbbell" },
+  { label: "Pull", slug: "pull", detail: "Back · Biceps", muscles: ["back", "biceps"], icon: "bolt" },
+  { label: "Legs", slug: "legs", detail: "Quads · Hamstrings · Glutes", muscles: ["quads", "hamstrings", "glutes"], icon: "flame" },
+  { label: "Full body", slug: "full-body", detail: "Four foundational movements", muscles: ["chest", "back", "quads", "shoulders"], icon: "user" },
 ];
 
 export function renderRoutineCards() {
-  return `<div class="routine-grid">${ROUTINES.map((routine) => `
-    <button class="routine-card" data-action="start-split" data-split="${esc(routine.label)}" data-muscles="${esc(routine.muscles.join(","))}">
-      <span class="routine-icon">${icon("dumbbell")}</span>
-      <span class="routine-copy"><strong>${esc(routine.label)}</strong><small>${esc(routine.detail)}</small></span>
+  return `<div class="routine-grid" data-reveal="rise">${ROUTINES.map((routine, index) => `
+    <button class="routine-card routine-${routine.slug}" style="--routine-order:${index}" data-action="start-split" data-split="${esc(routine.label)}" data-muscles="${esc(routine.muscles.join(","))}" aria-label="Start ${esc(routine.label)} routine, ${routine.muscles.length} exercises">
+      <span class="routine-icon">${icon(routine.icon)}</span>
+      <span class="routine-copy">
+        <strong>${esc(routine.label)}</strong>
+        <small>${esc(routine.detail)}</small>
+        <span class="routine-count">${routine.muscles.length} exercises</span>
+      </span>
       <span class="routine-go">${icon("chevron")}</span>
+      <span class="routine-shine" aria-hidden="true"></span>
     </button>`).join("")}</div>`;
 }

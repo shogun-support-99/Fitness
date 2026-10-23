@@ -24,9 +24,14 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
         <header class="view-head">
           <div><h1>Workout</h1><p class="view-subline">Build a session or start from a routine.</p></div>
         </header>
-        <section class="quick-start-panel">
-          <span class="section-label">Quick start</span>
-          <button class="btn btn-primary btn-wide btn-lg" data-action="start-workout">${icon("plus")} Start empty workout</button>
+        <section class="quick-start-panel workout-launch" data-reveal="rise">
+          <div>
+            <span class="energy-badge">${icon("bolt")} Build your session</span>
+            <h2>What are we training today?</h2>
+            <p>Start with a blank log or jump into a routine below. Your previous numbers will be waiting.</p>
+          </div>
+          <button class="btn btn-primary btn-lg" data-action="start-workout">${icon("plus")} Start empty workout ${icon("chevron")}</button>
+          <span class="launch-mark" aria-hidden="true">${icon("dumbbell")}</span>
         </section>
         <section class="routine-section" aria-labelledby="workout-routines-title">
           <div class="section-title-row"><h2 id="workout-routines-title">Routines</h2><a class="link" href="#/library">Explore exercises ${icon("chevron")}</a></div>
@@ -43,7 +48,7 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
 
   return `
     <section class="view view-workout">
-      <header class="logger-head">
+      <header class="logger-head" data-reveal="rise">
         <div class="logger-title">
           <span class="logger-kicker">Log workout</span>
           <input class="logger-name" value="${esc(workout.name)}" data-action="rename-workout"
@@ -69,7 +74,7 @@ export function renderWorkout(store, { elapsed = "00:00", timer = null } = {}) {
               body: "Pick from the built-in library or create your own.",
               action: `<button class="btn btn-primary" data-action="open-picker">${icon("plus")} Add exercise</button>`,
             })
-          : workout.exercises.map((entry) => renderExerciseCard(entry, index, store, units)).join("")}
+          : workout.exercises.map((entry, exerciseIndex) => renderExerciseCard(entry, index, store, units, exerciseIndex)).join("")}
       </div>
 
       ${workout.exercises.length > 0
@@ -104,16 +109,17 @@ function renderTimerBar(timer) {
     </div>`;
 }
 
-function renderExerciseCard(entry, index, store, units) {
+function renderExerciseCard(entry, index, store, units, exerciseIndex = 0) {
   const exercise = index[entry.exerciseId];
   const name = exercise?.name ?? entry.exerciseId;
   const previous = store.previousPerformance(entry.exerciseId);
 
   return `
-    <article class="exercise-card" data-entry="${esc(entry.id)}">
+    <article class="exercise-card" data-entry="${esc(entry.id)}" data-muscle="${esc(exercise?.muscle ?? "other")}" style="--exercise-order:${exerciseIndex}">
       <header class="exercise-head">
         ${exercise ? exerciseThumbnail(exercise) : ""}
         <div>
+          <span class="exercise-label">Exercise ${String(exerciseIndex + 1).padStart(2, "0")}</span>
           <h3>${esc(name)}</h3>
           <p class="exercise-sub">
             ${exercise ? `${esc(exercise.muscle)} · ${esc(exercise.equipment)}` : "Unknown exercise"}
