@@ -29,6 +29,7 @@ import { renderWorkout, PICKER_CAP } from "./views/workout.js";
 import { renderHistory } from "./views/history.js";
 import { renderStats } from "./views/stats.js";
 import { renderLibrary, renderExerciseDetail, RESULT_CAP } from "./views/library.js";
+import { mountScene, plateSplit } from "./scene3d.js";
 import { renderSettings } from "./views/settings.js";
 
 const store = new Store();
@@ -101,6 +102,49 @@ function applyTheme() {
   root.setAttribute("data-theme", theme);
 }
 
+/**
+ * The top bar carries two things and nothing else.
+ *
+ * The context line names where you are, which matters because the sheet is one
+ * continuous white surface with no per-view chrome to orient you. The live clock
+ * is the one figure worth putting in permanent chrome: while a session is open it
+ * is the number a lifter checks most and the only one they cannot reconstruct
+ * afterwards. When no session is open it is hidden rather than showing a stopped
+ * 00:00, because a clock that is not running is not information.
+ */
+const TOPBAR_LABELS = {
+  home: "Training log",
+  workout: "Logger",
+  history: "History",
+  stats: "Progress",
+  library: "Exercise library",
+  settings: "Settings",
+};
+
+function updateTopbar(navigation = router.current) {
+  const context = $("#topbar-context");
+  if (context) {
+    context.textContent = TOPBAR_LABELS[navigation.route] ?? "Training log";
+  }
+
+  const live = $("#topbar-live");
+  if (!live) return;
+  const active = store.activeWorkout();
+  live.hidden = !active;
+  if (!active) return;
+  const clock = live.querySelector('[data-role="topbar-elapsed"]');
+  if (!clock) return;
+  const started = new Date(active.startedAt).getTime();
+  if (!Number.isFinite(started)) return;
+  const secs = Math.max(0, Math.floor((Date.now() - started) / 1000));
+  const hh = Math.floor(secs / 3600);
+  const mm = String(Math.floor((secs % 3600) / 60)).padStart(2, "0");
+  const ss = String(secs % 60).padStart(2, "0");
+  // Past an hour the clock gains a hours field rather than rolling over to 75:00,
+  // which would read as a bug at exactly the moment a long session is going well.
+  clock.textContent = hh > 0 ? `${hh}:${mm}:${ss}` : `${mm}:${ss}`;
+}
+
 function render(navigation = router.current) {
   const outlet = $("#view-outlet");
   if (!outlet) return;
@@ -110,6 +154,7 @@ function render(navigation = router.current) {
 
   const view = VIEWS[navigation.route] ?? VIEWS.home;
   outlet.innerHTML = view(navigation.params);
+  updateTopbar(navigation);
 
   // Motion is wired after the markup exists, and torn down before the next
   // render, so a view change never leaves an observer on detached nodes.
@@ -151,10 +196,26 @@ function syncElapsedClock() {
     clearInterval(elapsedTimer);
     elapsedTimer = null;
   }
+  const liveEl = document.querySelector("#topbar-live");
+  if (liveEl) {
+    liveEl.hidden = !active;
+    if (!active) return;
+    updateTopbar();
+  }
   if (!active) return;
   elapsedTimer = setInterval(() => {
     const node = $('[data-role="elapsed"]');
     if (node) node.textContent = currentElapsed();
+    // The top bar clock shares this interval rather than starting its own, so the
+    // two can never drift and only one timer runs per session.
+    const topbarClock = document.querySelector('[data-role="topbar-elapsed"]');
+    if (topbarClock) {
+      const secs = Math.max(0, Math.floor((Date.now() - new Date(active.startedAt).getTime()) / 1000));
+      const hh = Math.floor(secs / 3600);
+      const mm = String(Math.floor((secs % 3600) / 60)).padStart(2, "0");
+      const ss = String(secs % 60).padStart(2, "0");
+      topbarClock.textContent = hh > 0 ? `${hh}:${mm}:${ss}` : `${mm}:${ss}`;
+    }
   }, 1000);
 }
 
@@ -736,6 +797,74 @@ function renderDetail() {
   // openSheet is idempotent: it unhides, adds .is-open for the transition and
   // locks body scroll, matching every other sheet in the app.
   openSheet("exercise-detail-sheet");
+  mountDetailScene();
+}
+
+/**
+ * The 3D load in the detail sheet.
+ *
+ * It renders the heaviest set this lifter has recorded for the exercise, loaded
+ * onto a barbell with the plates that weight actually needs. So the picture is a
+ * claim about their log rather than a stock illustration - and if there is no
+ * record yet, there is no scene, because an empty bar would be claiming a lift
+ * that never happened.
+ *
+ * Every failure path is silent and lands on the SVG diagrams already in the
+ * sheet: no WebGL, a blocked script, or reduced motion all leave the page fully
+ * usable. The previous scene is always torn down first, because WebGL contexts
+ * are a finite browser resource and the sheet re-renders on language change.
+ */
+let detailSceneTeardown = null;
+
+function mountDetailScene() {
+  if (detailSceneTeardown) {
+    detailSceneTeardown();
+    detailSceneTeardown = null;
+  }
+  const host = document.querySelector("#exercise-detail-content .scene-host");
+  const canvas = host?.querySelector("canvas.scene-canvas");
+  const exercise = detailState.exercise;
+  if (!canvas || !exercise) return;
+
+  const records = store.personalRecords();
+  const record = records.get(exercise.id) ?? null;
+  const heaviest = Number(record?.maxWeight) || 0;
+  if (heaviest <= 0) {
+    // Nothing recorded yet: leave the slot empty rather than inventing a load.
+    host.hidden = true;
+    return;
+  }
+  host.hidden = false;
+
+  const units = store.settings.units;
+  const split = plateSplit(heaviest, { units });
+  const colour = getComputedStyle(document.documentElement)
+    .getPropertyValue(`--m-${String(exercise.muscle || "other").toLowerCase()}-chart`)
+    .trim();
+
+  const readout = host.querySelector("[data-role="scene-readout"]");
+  if (readout) {
+    // Honest about the arithmetic: if the target is not reachable with real
+    // plates, say what was loaded instead of implying the record itself.
+    readout.textContent = split.ok
+      ? `${split.perSide.length} plate${split.perSide.length === 1 ? "" : "s"} a side · ${heaviest} ${units}`
+      : `Loaded ${split.loaded} ${units} of ${heaviest} ${units}`;
+  }
+
+  mountScene(canvas, {
+    perSide: split.perSide,
+    colour: colour || "#8a8a88",
+    scope: window,
+    onUnavailable: () => {
+      host.hidden = true;
+    },
+  })
+    .then((teardown) => {
+      detailSceneTeardown = teardown;
+    })
+    .catch(() => {
+      host.hidden = true;
+    });
 }
 
 async function loadDetailSteps(exercise, lang) {
@@ -771,6 +900,13 @@ function openExerciseDetail(id) {
 }
 
 function closeExerciseDetail() {
+  // Release the WebGL context before the sheet hides. Contexts are a finite
+  // browser resource and the library invites opening many exercises in a row, so
+  // a scene left alive per visit would eventually exhaust them.
+  if (detailSceneTeardown) {
+    detailSceneTeardown();
+    detailSceneTeardown = null;
+  }
   detailState = { exercise: null, stepsState: "idle", stepsResult: null };
   closeSheet("exercise-detail-sheet");
 }

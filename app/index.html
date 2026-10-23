@@ -82,7 +82,43 @@
         </div>
       </aside>
 
-      <main class="main" id="view-outlet" tabindex="-1"></main>
+      <!--
+        The frame. On a wide screen the sidebar and this bar are one tinted
+        L-shaped frame with no rule between them, and the page is a white sheet
+        inset 8px from the window's right and bottom edges. On a phone the frame
+        collapses: the sidebar becomes the bottom bar and this bar carries only
+        the live clock.
+      -->
+      <div class="frame">
+        <header class="topbar">
+          <p class="topbar-context" id="topbar-context" data-role="topbar-context">
+            Training log
+          </p>
+
+          <!--
+            The live clock is the one thing worth putting in permanent chrome:
+            while a session is open, elapsed time is the number a lifter checks
+            most and the one they cannot recover afterwards. Empty when no
+            session is running, rather than showing a stopped 00:00.
+          -->
+          <p class="topbar-live" id="topbar-live" data-role="topbar-live" hidden>
+            <span class="live-dot" aria-hidden="true"></span>
+            <span class="live-label">Live</span>
+            <span class="live-clock" data-role="topbar-elapsed">00:00</span>
+          </p>
+
+          <div class="topbar-tools">
+            <button class="icon-btn" type="button" data-action="cycle-theme"
+                    aria-label="Change theme" title="Change theme">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4.5a7.5 7.5 0 1 0 7.5 7.5c-4.2 0-7.5-3.3-7.5-7.5Z" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <main class="main" id="view-outlet" tabindex="-1"></main>
+      </div>
 
     </div>
 

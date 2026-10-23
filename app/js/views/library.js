@@ -162,6 +162,19 @@ export function renderExerciseDetail(exercise, { store = null, stepsResult = nul
         ${muscleDiagram(exercise) || ""}
       </div>
 
+      ${/*
+        The 3D load. main.js mounts into this canvas only when the lifter has a
+        recorded maximum for the exercise, and hides the slot otherwise - an empty
+        bar would claim a lift that never happened. It is an enhancement layered
+        on the SVG diagrams above, never a replacement: with no WebGL, a blocked
+        script or reduced motion the diagrams still carry the explanation.
+      */ ""}
+      <div class="scene-host" hidden>
+        <canvas class="scene-canvas" width="640" height="300" role="img"
+                aria-label="A barbell loaded with the plates this exercise's recorded maximum needs"></canvas>
+        <p class="scene-read" data-role="scene-readout"></p>
+      </div>
+
       <p class="detail-movement">
         <span class="movement-label">Movement</span>
         <span class="movement-value">${esc(movementClass(exercise))}</span>
