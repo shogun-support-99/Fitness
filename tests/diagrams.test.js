@@ -334,7 +334,7 @@ describe("exerciseMedia", () => {
     assert.match(html, /class="media media-drawn"/);
     assert.match(html, /diagram-movement/);
     assert.doesNotMatch(html, /<img/);
-    assert.match(html, /No third-party media ships with IronLog/);
+    assert.match(html, /No external illustration is bundled for this exercise/);
   });
 
   test("carries the required attribution when a licensed file is supplied", () => {
@@ -361,6 +361,41 @@ describe("exerciseMedia", () => {
   test("escapes a hostile name in the alt text", () => {
     const html = exerciseMedia({ ...bench, name: '"><script>' }, { mediaUrl: "media/x.gif" });
     assert.doesNotMatch(html, /<script/);
+  });
+  test("renders RepDB start and peak stills with visible attribution", () => {
+    const html = exerciseMedia({
+      ...bench,
+      media: {
+        provider: "repdb",
+        poses: { start: "media/repdb/bench-start.webp", peak: "media/repdb/bench-peak.webp" },
+      },
+    });
+    assert.match(html, /media-repdb/);
+    assert.match(html, /src="media\/repdb\/bench-start\.webp"/);
+    assert.match(html, /data-peak="media\/repdb\/bench-peak\.webp"/);
+    assert.match(html, /data-action="set-exercise-pose"/);
+    assert.match(html, /Exercise data by <a href="https:\/\/repdb\.co"/);
+    assert.match(html, /RepDB \(repdb\.co\)/);
+    assert.match(html, /width="512" height="512"/);
+  });
+
+  test("handles a RepDB single-pose stretch without empty controls", () => {
+    const html = exerciseMedia({
+      ...bench,
+      media: { provider: "repdb", poses: { main: "media/repdb/stretch-main.webp" } },
+    });
+    assert.match(html, /alt="Barbell Bench Press illustration"/);
+    assert.doesNotMatch(html, /set-exercise-pose/);
+    assert.doesNotMatch(html, /undefined/);
+  });
+
+  test("an explicitly supplied licensed file still takes precedence", () => {
+    const html = exerciseMedia(
+      { ...bench, media: { provider: "repdb", poses: { main: "media/repdb/x.webp" } } },
+      { mediaUrl: "media/own.webp", mediaCredit: "Filmed by the author" },
+    );
+    assert.match(html, /media\/own\.webp/);
+    assert.doesNotMatch(html, /media-repdb/);
   });
 });
 

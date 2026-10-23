@@ -128,7 +128,7 @@
   <!-- Facts as a sentence with mono figures, not a row of metric tiles -->
   <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" fill="#a3a3a3">
     <text x="84" y="392">
-      <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f4f4f4">1,388</tspan> exercises
+      <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f4f4f4">1,930</tspan> exercises
     </text>
     <text x="84" y="428">
       <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f4f4f4">10</tspan> instruction languages

@@ -2936,6 +2936,56 @@ select {
   text-align: center;
 }
 
+.detail-visual.has-media {
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+}
+
+.media-repdb {
+  width: 100%;
+}
+
+.media-repdb img {
+  max-width: 220px;
+  background: #f4f3f1;
+}
+
+.media-repdb figcaption {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+
+.media-credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.media-poses {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--sunken);
+}
+
+.media-poses button {
+  min-width: 64px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: 500 var(--fs-small) / 1 var(--font);
+  cursor: pointer;
+}
+
+.media-poses button[aria-pressed="true"] {
+  background: var(--text);
+  color: var(--surface);
+}
+
 .detail-movement {
   display: flex;
   align-items: baseline;
@@ -2959,9 +3009,14 @@ select {
 }
 
 @media (max-width: 560px) {
-  .detail-visual {
+  .detail-visual,
+  .detail-visual.has-media {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
+  }
+
+  .detail-visual.has-media .diagram-muscle {
+    width: min(100%, 320px);
   }
 }
 

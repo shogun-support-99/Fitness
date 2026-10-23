@@ -180,7 +180,7 @@ function renderSetRow(entry, set, index, previous, units) {
 function renderPicker(store) {
   const exercises = store.exercises();
   const muscles = [...new Set(exercises.map((e) => e.muscle))].sort();
-  // The catalogue holds ~1,400 entries; render a capped, ranked slice and let
+  // The catalogue holds ~1,900 entries; render a capped, ranked slice and let
   // search narrow it rather than building every row up front.
   const shown = exercises.slice(0, PICKER_CAP);
   return `

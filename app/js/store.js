@@ -182,7 +182,7 @@ export class Store {
   }
 
   /**
-   * Rebuilding a ~1,400-entry index on every call is wasteful when the logger
+   * Rebuilding a ~1,900-entry index on every call is wasteful when the logger
    * asks for it per render, so it is memoised against the inputs that can
    * change it: catalogue state plus the custom-exercise count.
    */

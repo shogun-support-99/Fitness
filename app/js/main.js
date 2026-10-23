@@ -438,6 +438,20 @@ const actions = {
     filterLibraryList();
   },
 
+  "set-exercise-pose": (el) => {
+    const figure = el.closest("[data-repdb-media]");
+    const pose = el.dataset.pose;
+    const url = figure?.dataset?.[pose];
+    const image = figure?.querySelector('[data-role="exercise-pose-image"]');
+    if (!url || !image) return;
+    image.src = url;
+    image.dataset.pose = pose;
+    image.alt = `${detailState.exercise?.name ?? "Exercise"} ${pose} position`;
+    figure.querySelectorAll("[data-action='set-exercise-pose']").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button === el));
+    });
+  },
+
   // Custom exercises
   "open-exercise": (el) => openExerciseDetail(el.dataset.id),
   "close-exercise-detail": () => closeExerciseDetail(),
@@ -734,7 +748,7 @@ function filterPicker() {
 // The sheet paints the taxonomy synchronously, then fills in the numbered
 // instructions once that language's pack resolves. Instructions live in
 // per-language files fetched on demand, so opening one exercise costs at most
-// one pack rather than shipping all ten.
+// one pack rather than shipping every source/language pack.
 
 function renderDetail() {
   const sheet = $("#exercise-detail-sheet");
@@ -811,7 +825,11 @@ function libraryRowHtml(e) {
           <span class="library-name">
             ${esc(e.name)}
             ${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}
-            ${e.source === "dataset" ? `<em class="pill pill-data">catalogue</em>` : ""}
+            ${e.media?.provider === "repdb"
+              ? `<em class="pill pill-data">illustrated</em>`
+              : e.source === "dataset" || e.source === "repdb"
+                ? `<em class="pill pill-data">catalogue</em>`
+                : ""}
           </span>
           <span class="library-meta">
             <span class="badge badge-${esc(e.muscle)}">${esc(e.muscle)}</span>
@@ -871,7 +889,9 @@ document.addEventListener("change", (event) => {
   const el = event.target.closest("[data-action]");
   if (!el) return;
   const action = el.dataset.action;
-  if (action === "toggle-autorest" || action === "import-file") actions[action]?.(el, event);
+  if (action === "toggle-autorest" || action === "import-file" || action === "set-instruction-language") {
+    actions[action]?.(el, event);
+  }
 });
 
 document.addEventListener("submit", (event) => {
