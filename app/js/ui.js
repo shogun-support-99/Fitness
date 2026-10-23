@@ -19,6 +19,7 @@ export function esc(value) {
 /** Inline stroke icons — hand-drawn paths, no icon font, no external request. */
 const ICONS = {
   home: "M3 10.5 12 3l9 7.5M5.5 9.5V20h13V9.5",
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c.7-4 3.1-6 7-6s6.3 2 7 6",
   dumbbell:
     "M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10",
   history: "M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3.5 4.5V10h5.5M12 7.5V12l3 1.8",
@@ -77,14 +78,20 @@ export function barChart(points, { height = 132, ariaLabel = "chart" } = {}) {
   const values = points.map((p) => Number(p.value) || 0);
   const max = Math.max(...values, 1);
   const width = 100;
-  const gap = points.length > 1 ? 1.6 : 0;
-  const barWidth = (width - gap * (points.length - 1)) / points.length;
+  const gap = 1.6;
+  // Keep sparse histories readable: one workout week should be one bar, not a
+  // full-width rectangle. Six slots leave room for the series to grow while
+  // the populated group stays centred and full series remain edge to edge.
+  const slots = Math.max(points.length, 6);
+  const barWidth = (width - gap * (slots - 1)) / slots;
+  const usedWidth = points.length * barWidth + Math.max(0, points.length - 1) * gap;
+  const offset = (width - usedWidth) / 2;
 
   const bars = points
     .map((p, i) => {
       const v = Number(p.value) || 0;
       const h = max > 0 ? (v / max) * 100 : 0;
-      const x = i * (barWidth + gap);
+      const x = offset + i * (barWidth + gap);
       return `<rect class="chart-bar" x="${x.toFixed(2)}" y="${(100 - h).toFixed(2)}" width="${barWidth.toFixed(2)}" height="${Math.max(h, 0.6).toFixed(2)}" rx="0.8"><title>${esc(p.label ?? "")}: ${esc(p.display ?? v)}</title></rect>`;
     })
     .join("");
@@ -92,9 +99,9 @@ export function barChart(points, { height = 132, ariaLabel = "chart" } = {}) {
   return `
     <div class="chart" style="--chart-h:${height}px" role="img" aria-label="${esc(ariaLabel)}">
       <svg viewBox="0 0 ${width} 100" preserveAspectRatio="none">${bars}</svg>
-      <div class="chart-axis">
+      <div class="chart-axis${points.length === 1 ? " chart-axis-single" : ""}">
         <span>${esc(points[0].axis ?? "")}</span>
-        <span>${esc(points[points.length - 1].axis ?? "")}</span>
+        ${points.length > 1 ? `<span>${esc(points[points.length - 1].axis ?? "")}</span>` : ""}
       </div>
     </div>`;
 }

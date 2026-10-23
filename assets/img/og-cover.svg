@@ -1,143 +1,99 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="IronLog — offline-first strength training log">
-  <!--
-    The same object as the landing page: a training log sheet on a bench-lit
-    ground. Flat fills only — no gradient ground, no glow, no glass. Ink on
-    paper, tabular figures, and the single blue on the record that broke.
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">IronLog — Log workouts. Get stronger.</title>
+  <desc id="description">A bright workout tracker with routines, previous performance, rest timers and progress. 1,930 exercises, 11 instruction languages, no accounts.</desc>
+  <rect width="1200" height="630" fill="#f5f6f8"/>
+  <circle cx="1128" cy="42" r="260" fill="#e9f5fd"/>
 
-    Social crawlers do not load webfonts, so this artwork uses system stacks
-    rather than the self-hosted faces the site itself sets.
-  -->
-  <rect width="1200" height="630" fill="#141414"/>
-
-  <!-- ── The sheet ─────────────────────────────────────────────────────── -->
-  <g transform="translate(664 74)">
-    <rect width="466" height="482" rx="8" fill="#f7f6f3"/>
-    <rect x="0.75" y="0.75" width="464.5" height="480.5" rx="7.25" fill="none" stroke="#d9d7d0" stroke-width="1.5"/>
-
-    <!-- Sheet head -->
-    <rect x="1.5" y="1.5" width="463" height="56" rx="7" fill="#ffffff"/>
-    <text x="26" y="37" fill="#0f0f0f" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" letter-spacing="-0.2">Training log</text>
-    <text x="440" y="37" fill="#6b6b6b" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" text-anchor="end">Tue 14 Oct</text>
-    <line x1="1.5" y1="57.5" x2="464.5" y2="57.5" stroke="#d9d7d0" stroke-width="1.5"/>
-
-    <!-- Exercise one -->
-    <text x="26" y="94" fill="#0f0f0f" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" letter-spacing="-0.2">Barbell Bench Press</text>
-    <text x="440" y="94" fill="#8a8a8a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" text-anchor="end">chest · barbell</text>
-
-    <!-- Column heads: sentence case, grey, no tracking, no band -->
-    <g fill="#8a8a8a" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">
-      <text x="26" y="124">Set</text>
-      <text x="180" y="124" text-anchor="end">kg</text>
-      <text x="262" y="124" text-anchor="end">Reps</text>
-      <text x="392" y="124" text-anchor="end">Est 1RM</text>
+  <!-- Product identity -->
+  <g transform="translate(68 62)">
+    <rect width="48" height="48" rx="13" fill="#e9f5fd"/>
+    <g stroke="#1b96e8" stroke-width="3" stroke-linecap="round" fill="none">
+      <path d="M11 19v10M16 14v20M32 14v20M37 19v10M16 24h16"/>
     </g>
-    <line x1="26" y1="133" x2="440" y2="133" stroke="#d9d7d0" stroke-width="1.5"/>
-
-    <!-- Rows: rules and alignment, numbers right-aligned in tabular figures -->
-    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">
-      <text x="26" y="160" fill="#8a8a8a">1</text>
-      <text x="180" y="160" fill="#0f0f0f" text-anchor="end">80</text>
-      <text x="262" y="160" fill="#0f0f0f" text-anchor="end">8</text>
-      <text x="392" y="160" fill="#3d3d3d" text-anchor="end">101.3</text>
-      <line x1="26" y1="172" x2="440" y2="172" stroke="#e2e0da" stroke-width="1"/>
-
-      <text x="26" y="199" fill="#8a8a8a">2</text>
-      <text x="180" y="199" fill="#0f0f0f" text-anchor="end">85</text>
-      <text x="262" y="199" fill="#0f0f0f" text-anchor="end">6</text>
-      <!-- The one hue, on the record that broke -->
-      <text x="392" y="199" fill="#1d5fbf" text-anchor="end" font-weight="500">102.0</text>
-      <rect x="400" y="187" width="30" height="16" rx="3" fill="#e7eef9"/>
-      <text x="415" y="199" fill="#123f7f" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="10.5" font-weight="600" text-anchor="middle">PR</text>
-      <line x1="26" y1="211" x2="440" y2="211" stroke="#e2e0da" stroke-width="1"/>
-
-      <text x="26" y="238" fill="#8a8a8a">3</text>
-      <text x="180" y="238" fill="#0f0f0f" text-anchor="end">85</text>
-      <text x="262" y="238" fill="#0f0f0f" text-anchor="end">5</text>
-      <text x="392" y="238" fill="#3d3d3d" text-anchor="end">99.2</text>
-      <line x1="26" y1="250" x2="440" y2="250" stroke="#d9d7d0" stroke-width="1.5"/>
-
-      <text x="26" y="272" fill="#6b6b6b" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12" font-weight="500">Volume</text>
-      <text x="440" y="272" fill="#6b6b6b" text-anchor="end">1,575 kg</text>
-    </g>
-
-    <!-- Ticks: drawn, in ink -->
-    <g>
-      <rect x="418" y="147" width="16" height="16" rx="3" fill="#0f0f0f"/>
-      <path d="M422 155l3.2 3.4 5.4-6.6" stroke="#f7f6f3" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="418" y="186" width="16" height="16" rx="3" fill="#0f0f0f"/>
-      <path d="M422 194l3.2 3.4 5.4-6.6" stroke="#f7f6f3" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="418" y="225" width="16" height="16" rx="3" fill="#0f0f0f"/>
-      <path d="M422 233l3.2 3.4 5.4-6.6" stroke="#f7f6f3" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-
-    <!-- Exercise two -->
-    <line x1="1.5" y1="292" x2="464.5" y2="292" stroke="#d9d7d0" stroke-width="1.5"/>
-    <text x="26" y="328" fill="#0f0f0f" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" font-weight="600" letter-spacing="-0.2">Incline Dumbbell Press</text>
-    <text x="440" y="328" fill="#8a8a8a" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12.5" text-anchor="end">chest · dumbbell</text>
-
-    <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15">
-      <text x="26" y="362" fill="#8a8a8a">1</text>
-      <text x="180" y="362" fill="#0f0f0f" text-anchor="end">32</text>
-      <text x="262" y="362" fill="#0f0f0f" text-anchor="end">10</text>
-      <text x="392" y="362" fill="#3d3d3d" text-anchor="end">42.7</text>
-      <line x1="26" y1="374" x2="440" y2="374" stroke="#e2e0da" stroke-width="1"/>
-
-      <text x="26" y="401" fill="#8a8a8a">2</text>
-      <text x="180" y="401" fill="#0f0f0f" text-anchor="end">32</text>
-      <text x="262" y="401" fill="#0f0f0f" text-anchor="end">9</text>
-      <text x="392" y="401" fill="#3d3d3d" text-anchor="end">41.6</text>
-    </g>
-    <g>
-      <rect x="418" y="349" width="16" height="16" rx="3" fill="#0f0f0f"/>
-      <path d="M422 357l3.2 3.4 5.4-6.6" stroke="#f7f6f3" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-      <rect x="418" y="388" width="16" height="16" rx="3" fill="#0f0f0f"/>
-      <path d="M422 396l3.2 3.4 5.4-6.6" stroke="#f7f6f3" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    </g>
-
-    <!-- Rest timer: a thin flat rule, no glow -->
-    <line x1="1.5" y1="420" x2="464.5" y2="420" stroke="#d9d7d0" stroke-width="1.5"/>
-    <text x="26" y="449" fill="#6b6b6b" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12.5">Rest</text>
-    <rect x="76" y="443" width="300" height="3" rx="1.5" fill="#efeeea"/>
-    <rect x="76" y="443" width="186" height="3" rx="1.5" fill="#1d5fbf"/>
-    <text x="440" y="449" fill="#0f0f0f" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="14" text-anchor="end">0:48</text>
-
-    <!-- Sheet foot -->
-    <line x1="1.5" y1="466" x2="464.5" y2="466" stroke="#d9d7d0" stroke-width="1.5"/>
-    <text x="26" y="478" fill="#6b6b6b" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="12">Session total 2,423 kg across 6 sets</text>
+    <text x="62" y="34" fill="#191b1f" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="-1">IronLog</text>
   </g>
 
-  <!-- ── Left column: name, claim, facts ───────────────────────────────── -->
-  <g transform="translate(84 118)">
-    <!-- The mark: the object, drawn as ledger geometry -->
-    <rect width="62" height="62" rx="8" fill="#f7f6f3"/>
-    <g stroke="#0f0f0f" stroke-width="4.4" stroke-linecap="round" fill="none">
-      <path d="M15.5 25v12"/>
-      <path d="M22.4 18.4v25.2"/>
-      <path d="M39.6 18.4v25.2"/>
-      <path d="M46.5 25v12"/>
-      <path d="M22.4 31h17.2"/>
+  <g font-family="Inter, Helvetica Neue, Arial, sans-serif" font-weight="700" letter-spacing="-3.5">
+    <text x="68" y="218" fill="#191b1f" font-size="70">Log workouts.</text>
+    <text x="68" y="294" fill="#1b96e8" font-size="70">Get stronger.</text>
+  </g>
+  <text x="70" y="348" fill="#68717b" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="21">
+    <tspan x="70" dy="0">Routines, previous numbers, rest timers</tspan>
+    <tspan x="70" dy="31">and progress — free and offline.</tspan>
+  </text>
+
+  <g transform="translate(70 492)" font-family="Inter, Helvetica Neue, Arial, sans-serif">
+    <text y="0" fill="#191b1f" font-size="25" font-weight="700">1,930</text>
+    <text y="27" fill="#68717b" font-size="15">exercises</text>
+    <line x1="132" y1="-18" x2="132" y2="30" stroke="#d9dfe5"/>
+    <text x="164" y="0" fill="#191b1f" font-size="25" font-weight="700">11</text>
+    <text x="164" y="27" fill="#68717b" font-size="15">instruction languages</text>
+    <line x1="380" y1="-18" x2="380" y2="30" stroke="#d9dfe5"/>
+    <text x="412" y="0" fill="#191b1f" font-size="25" font-weight="700">0</text>
+    <text x="412" y="27" fill="#68717b" font-size="15">accounts or trackers</text>
+  </g>
+  <text x="70" y="580" fill="#68717b" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="15">Stored in your browser · Works offline · MIT licensed</text>
+
+  <!-- Workout logger -->
+  <g transform="translate(716 48)">
+    <rect width="424" height="534" rx="22" fill="#ffffff" stroke="#dfe4e9" stroke-width="2"/>
+    <text x="26" y="44" fill="#68717b" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="13">Log workout</text>
+    <text x="26" y="76" fill="#191b1f" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="25" font-weight="700">Push Day</text>
+    <rect x="318" y="28" width="80" height="40" rx="9" fill="#1b96e8"/>
+    <text x="358" y="54" fill="#ffffff" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="14" font-weight="600" text-anchor="middle">Finish</text>
+
+    <g font-family="Inter, Helvetica Neue, Arial, sans-serif">
+      <text x="26" y="108" fill="#68717b" font-size="12">Duration</text>
+      <text x="26" y="134" fill="#1b96e8" font-size="20" font-weight="650">32:14</text>
+      <text x="157" y="108" fill="#68717b" font-size="12">Volume</text>
+      <text x="157" y="134" fill="#191b1f" font-size="20" font-weight="650">2,423 kg</text>
+      <text x="319" y="108" fill="#68717b" font-size="12">Sets</text>
+      <text x="319" y="134" fill="#191b1f" font-size="20" font-weight="650">6</text>
     </g>
-    <rect x="28.2" y="26.8" width="5.6" height="8.4" rx="1.4" fill="#1d5fbf"/>
+    <line x1="26" y1="153" x2="398" y2="153" stroke="#eceff2"/>
+
+    <rect x="18" y="174" width="388" height="246" rx="14" fill="#ffffff" stroke="#e1e5e9"/>
+    <circle cx="49" cy="207" r="17" fill="#e9f5fd"/>
+    <g stroke="#1b96e8" stroke-width="2" stroke-linecap="round">
+      <path d="M40 203v8M44 199v16M54 199v16M58 203v8M44 207h10"/>
+    </g>
+    <text x="76" y="205" fill="#0875bb" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="17" font-weight="650">Barbell Bench Press</text>
+    <text x="76" y="225" fill="#68717b" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="12">chest · barbell</text>
+
+    <g fill="#68717b" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="10" font-weight="600" letter-spacing=".5">
+      <text x="32" y="260">SET</text>
+      <text x="80" y="260">PREVIOUS</text>
+      <text x="190" y="260">KG</text>
+      <text x="260" y="260">REPS</text>
+      <text x="365" y="260">DONE</text>
+    </g>
+
+    <g font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="15">
+      <rect x="26" y="274" width="372" height="42" rx="7" fill="#e9f8ed"/>
+      <text x="39" y="301" fill="#191b1f" font-weight="600">1</text>
+      <text x="87" y="301" fill="#68717b">80×8</text>
+      <text x="192" y="301" fill="#191b1f">85</text>
+      <text x="265" y="301" fill="#191b1f">6</text>
+      <rect x="358" y="281" width="30" height="30" rx="7" fill="#4bbb6b"/>
+      <path d="M365 296l5 5 11-12" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <text x="39" y="346" fill="#191b1f" font-weight="600">2</text>
+      <text x="87" y="346" fill="#68717b">85×6</text>
+      <rect x="181" y="326" width="48" height="30" rx="6" fill="#eff1f4"/>
+      <text x="205" y="346" fill="#191b1f" text-anchor="middle">85</text>
+      <rect x="249" y="326" width="42" height="30" rx="6" fill="#eff1f4"/>
+      <text x="270" y="346" fill="#191b1f" text-anchor="middle">5</text>
+      <rect x="358" y="326" width="30" height="30" rx="7" fill="#eff1f4"/>
+      <path d="M365 341l5 5 11-12" fill="none" stroke="#a2abb4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <rect x="26" y="377" width="372" height="30" rx="7" fill="#eff1f4"/>
+    <text x="212" y="397" fill="#3c424a" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="12" font-weight="600" text-anchor="middle">+ Add set</text>
+
+    <rect x="18" y="440" width="388" height="66" rx="12" fill="#f7f8fa" stroke="#e1e5e9"/>
+    <circle cx="45" cy="473" r="10" fill="none" stroke="#1b96e8" stroke-width="2"/>
+    <path d="M45 467v7l4 2" fill="none" stroke="#1b96e8" stroke-width="2" stroke-linecap="round"/>
+    <rect x="70" y="469" width="220" height="6" rx="3" fill="#e1e5e9"/>
+    <rect x="70" y="469" width="146" height="6" rx="3" fill="#1b96e8"/>
+    <text x="378" y="480" fill="#1b96e8" font-family="Inter, Helvetica Neue, Arial, sans-serif" font-size="20" font-weight="650" text-anchor="end">0:48</text>
   </g>
-
-  <text x="84" y="264" fill="#f4f4f4" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="72" font-weight="600" letter-spacing="-2.6">IronLog</text>
-  <text x="84" y="308" fill="#a3a3a3" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="23" font-weight="400" letter-spacing="-0.3">The strength training log that stays yours.</text>
-
-  <line x1="84" y1="348" x2="580" y2="348" stroke="#2b2b2b" stroke-width="1"/>
-
-  <!-- Facts as a sentence with mono figures, not a row of metric tiles -->
-  <g font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="17" fill="#a3a3a3">
-    <text x="84" y="392">
-      <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f4f4f4">1,388</tspan> exercises
-    </text>
-    <text x="84" y="428">
-      <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f4f4f4">10</tspan> instruction languages
-    </text>
-    <text x="84" y="464">
-      <tspan font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="18" fill="#f4f4f4">0</tspan> accounts, trackers or servers
-    </text>
-  </g>
-
-  <line x1="84" y1="504" x2="580" y2="504" stroke="#2b2b2b" stroke-width="1"/>
-  <text x="84" y="546" fill="#7d7d7d" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="16">Free · Works offline · MIT licensed</text>
 </svg>

@@ -20,7 +20,8 @@
  *
  * So this script strips every media reference — image, gif_url, media_id and
  * the per-record media attribution field — and refuses to emit them. IronLog
- * ships no third-party media. `--allow-media` does not exist on purpose.
+ * ships no Gym Visual media from this source. `--allow-media` does not exist.
+ * Separately licensed RepDB stills are handled by build-repdb-data.mjs.
  *
  * OUTPUT
  *   app/data/exercises-index.json   compact metadata for every exercise

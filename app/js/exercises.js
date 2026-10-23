@@ -189,7 +189,7 @@ export function allExercises(custom = [], dataset = []) {
 }
 
 /**
- * Rank a match so the most likely intent comes first. With ~1,400 exercises in
+ * Rank a match so the most likely intent comes first. With ~1,900 exercises in
  * the catalogue, relevance order matters more than alphabetical order.
  * 0 = no match, lower is better.
  */

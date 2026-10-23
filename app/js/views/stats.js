@@ -14,15 +14,29 @@ import {
 } from "../stats.js";
 import { barChart, distributionBars, emptyState, esc, icon, statTile } from "../ui.js";
 
+function renderProfileHead(workoutCount) {
+  return `
+    <header class="view-head profile-view-head">
+      <div class="profile-identity">
+        <span class="profile-avatar">${icon("user")}</span>
+        <div><h1>Your profile</h1><p class="view-subline">${workoutCount} workout${workoutCount === 1 ? "" : "s"} · stored on this device</p></div>
+      </div>
+      <a class="icon-btn profile-settings" href="#/settings" aria-label="Open settings">${icon("settings")}</a>
+    </header>
+    <nav class="profile-shortcuts" aria-label="Profile sections">
+      <a class="is-active" href="#/stats">${icon("stats")} Statistics</a>
+      <a href="#/library">${icon("library")} Exercises</a>
+      <a href="#/history">${icon("history")} History</a>
+    </nav>`;
+}
+
 export function renderStats(store) {
   const completed = store.completedWorkouts();
 
   if (completed.length === 0) {
     return `
       <section class="view view-stats">
-        <header class="view-head">
-          <div><h1>Stats</h1></div>
-        </header>
+        ${renderProfileHead(0)}
         ${emptyState({
           icon: "stats",
           title: "No data to chart yet",
@@ -40,10 +54,9 @@ export function renderStats(store) {
 
   return `
     <section class="view view-stats">
-      <header class="view-head">
-        <div><h1>Progress</h1><p class="view-subline">Across ${life.workouts} session${life.workouts === 1 ? "" : "s"}</p></div>
-      </header>
+      ${renderProfileHead(life.workouts)}
 
+      <div class="section-title-row"><h2>Statistics</h2><span class="panel-note">All time</span></div>
       <div class="tile-grid tile-grid-4">
         ${statTile({ label: "Total volume", value: compactNumber(life.volume), unit: units, tone: "tone-accent" })}
         ${statTile({ label: "Total sets", value: compactNumber(life.sets) })}
@@ -52,11 +65,11 @@ export function renderStats(store) {
       </div>
 
       <section class="panel">
-        <div class="panel-head"><h2>Weekly volume</h2><span class="panel-note">last ${weeks.length} weeks</span></div>
+        <div class="panel-head"><h2>Weekly volume</h2><span class="panel-note">last ${weeks.length} ${weeks.length === 1 ? "week" : "weeks"}</span></div>
         ${barChart(
           weeks.map((w) => ({
             value: w.volume,
-            label: `${w.week}: ${compactNumber(w.volume)} ${units} across ${w.workouts} sessions`,
+            label: `${w.week}: ${compactNumber(w.volume)} ${units} across ${w.workouts} ${w.workouts === 1 ? "session" : "sessions"}`,
             display: `${compactNumber(w.volume)} ${units}`,
             axis: w.week.replace(/^\d{4}-/, ""),
           })),
@@ -112,6 +125,6 @@ function muscleDistribution(workouts, index) {
     }
   }
   return [...counts.entries()]
-    .map(([label, value]) => ({ label, value, display: `${value} sets` }))
+    .map(([label, value]) => ({ label, value, display: `${value} ${value === 1 ? "set" : "sets"}` }))
     .sort((a, b) => b.value - a.value);
 }

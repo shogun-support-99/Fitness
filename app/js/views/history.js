@@ -85,7 +85,7 @@ function renderHistoryCard(workout, index, units, open) {
         <span class="history-main">
           <span class="history-name">${esc(workout.name)}</span>
           <span class="history-meta">
-            ${summary.sets} sets · ${compactNumber(summary.volume)} ${esc(units)} · ${summary.minutes} min
+            ${summary.sets} ${summary.sets === 1 ? "set" : "sets"} · ${compactNumber(summary.volume)} ${esc(units)} · ${summary.minutes} min
             · ${esc(relativeTime(workout.endedAt ?? workout.startedAt))}
           </span>
           ${prCount > 0 ? `<span class="pr-flag">${icon("trophy")} ${prCount} personal record${prCount === 1 ? "" : "s"}</span>` : ""}

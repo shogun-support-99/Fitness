@@ -20,7 +20,8 @@ export function renderSettings(store) {
   return `
     <section class="view view-settings">
       <header class="view-head">
-        <div><h1>Settings</h1></div>
+        <div><h1>Settings</h1><p class="view-subline">Workout preferences, appearance and your local data.</p></div>
+        <a class="link" href="#/stats">${icon("user")} Profile</a>
       </header>
 
       <section class="panel">
@@ -73,8 +74,8 @@ export function renderSettings(store) {
             .join("")}
         </div>
         <p class="panel-hint">
-          The ledger is drawn for light: stone paper, ink, and one blue on the numbers that
-          matter. Dark keeps the same rules in true neutral greys.
+          Choose a bright training log, a low-light theme, or match your system. Every theme
+          uses the same clear blue actions and green completed-set feedback.
         </p>
       </section>
 
@@ -149,12 +150,14 @@ function renderCataloguePanel(store) {
   const meta = store.catalogueMeta;
   const state = store.catalogueState;
   const counts = meta?.counts ?? {};
-  const source = meta?.source ?? {};
+  const source = meta?.sources?.dataset ?? meta?.source ?? {};
+  const repdbSource = meta?.sources?.repdb ?? meta?.repdb?.source ?? {};
   const commit = source.commit ? String(source.commit).slice(0, 7) : null;
+  const repdbCommit = repdbSource.commit ? String(repdbSource.commit).slice(0, 7) : null;
 
   const stateLine =
     state === "ready"
-      ? `${store.catalogue.length} catalogue exercises loaded`
+      ? `${store.catalogue.length} source records loaded · ${store.exercises().length} unique in the library`
       : state === "loading"
         ? "Catalogue is loading…"
         : state === "unavailable"
@@ -167,18 +170,20 @@ function renderCataloguePanel(store) {
       <dl class="fact-list">
         <div><dt>Status</dt><dd>${esc(stateLine)}</dd></div>
         <div><dt>Languages</dt><dd>${counts.languages ?? availableLanguages(meta).length}</dd></div>
-        ${commit ? `<div><dt>Source commit</dt><dd>${esc(commit)}</dd></div>` : ""}
+        ${commit ? `<div><dt>Data commit</dt><dd>${esc(commit)}</dd></div>` : ""}
+        ${repdbCommit ? `<div><dt>RepDB commit</dt><dd>${esc(repdbCommit)}</dd></div>` : ""}
+        ${counts.repdbImages ? `<div><dt>Licensed stills</dt><dd>${counts.repdbImages} WebP</dd></div>` : ""}
       </dl>
       <p class="panel-hint attribution">
         Exercise names, taxonomy and step-by-step instruction text come from
         <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener noreferrer" target="_blank">hasaneyldrm/exercises-dataset</a>,
-        used under the MIT licence — © 2026 Hasan Emir Yıldırım.
+        used under the MIT licence — © 2026 Hasan Emir Yıldırım. Its Gym Visual GIFs and
+        thumbnails remain excluded because cloning grants no media licence.
       </p>
       <p class="panel-hint attribution">
-        That repository's animation GIFs and thumbnail images are separately © Gym Visual
-        and are explicitly <em>not</em> covered by its MIT grant, so IronLog redistributes
-        none of them. The generator strips every media reference and fails if one appears
-        in its output.
+        Exercise data by <a href="https://repdb.co" rel="noopener noreferrer" target="_blank">RepDB (repdb.co)</a>.
+        RepDB's free-tier records and 512px WebP illustrations are used in-app with attribution
+        under the RepDB Free Tier License. Premium evaluation animations are not included.
       </p>
     </section>`;
 }

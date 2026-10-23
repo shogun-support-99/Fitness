@@ -1,86 +1,79 @@
-# Exercise media slot
+# Exercise media
 
-This directory is **empty on purpose**, and IronLog ships **no third-party
-exercise media**.
+This directory contains only exercise media whose in-app redistribution terms
+have been checked, plus the documented slot for media a downstream user holds
+rights to.
 
-## Why the dataset's GIFs are not here
+## RepDB free-tier stills
 
-The exercise dataset this project draws on
-([`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset))
-is MIT licensed — but its `LICENSE` carries an explicit **MEDIA EXCEPTION** that
-carves the media out of that MIT grant:
+`repdb/` contains **1,147 unmodified 512×512 WebP illustrations** referenced by
+the 650 RepDB records in `app/data/repdb-index.json`. They come from
+[`RepDB/exercise-dataset`](https://github.com/RepDB/exercise-dataset); the exact
+upstream commit is recorded in `app/data/repdb-meta.json`.
 
-> The MIT license above covers ONLY the code, tooling, dataset structure, and
-> instruction text/translations in this repository.
->
-> It DOES NOT cover the exercise media in the `images/` and `videos/`
-> directories. That media is © Gym visual (https://gymvisual.com/) and is
-> included here with the rights holder's written permission, at 180×180
-> resolution, and must retain the attribution "© Gym visual —
-> https://gymvisual.com/". Its use and reuse are governed by Gym visual's Terms
-> & Conditions and by `NOTICE.md` in this repository — NOT by the MIT license
-> above. **Cloning this repository does not grant you any license to the media;
-> obtain your own from Gym visual.**
+**Exercise data by [RepDB](https://repdb.co) (repdb.co).**
 
-So the thumbnails and animation GIFs are somebody else's copyright, and having a
-copy of the repo is not permission to publish them. Redistributing them from a
-public site would infringe, regardless of what the rest of the dataset allows.
+The RepDB Free Tier License permits personal and commercial **in-app use** with
+visible attribution. It does not permit republishing the data as a standalone
+dataset, dataset repository or API. The full terms are retained in
+[`LICENSE-REPDB.md`](../../LICENSE-REPDB.md), and attribution is visible in
+Settings and on illustrated exercise details.
 
-The instruction **text** is a different matter: that is inside the MIT grant, so
-IronLog ships all ten language packs and keeps the attribution with them. See
-[`NOTICE`](../../NOTICE).
+Only referenced `images/flat/*.webp` files are copied. Upstream
+`premium-samples/`, paid-tier animations, classic images and every GIF/video
+are excluded. The images are not generatively edited, restyled or used as AI
+reference material.
 
-There is a second, more mundane reason: the media is **138 MB** (1,324 images and
-1,324 videos). It would dominate a repository whose entire application code is
-under 1 MB.
+Regenerate from a local upstream checkout with:
 
-## What renders instead
+```sh
+node scripts/build-repdb-data.mjs --source /path/to/exercise-dataset
+```
 
-`app/js/diagrams.js` draws an original **movement diagram** for every exercise —
-animated vector geometry generated from the dataset's own MIT-licensed fields
-(`category`, `muscle`, `muscleGroup`, `target`, `equipment`,
-`secondaryMuscles`).
+The generator fails if the expected license terms disappear, a media path is
+outside the free flat-image directory, or a referenced asset is missing.
+`tests/repdb.test.js` verifies all committed records, paths, WebP signatures,
+instruction packs and attribution.
 
-It is deliberately not a picture of a person. It is a lever, an arc, a travel
-path and a force vector: the mechanics of the movement. That makes it themeable
-(light and dark), sharp at any size, a few hundred bytes instead of a few
-hundred kilobytes, and it animates — which a 180×180 GIF does not do well.
+## Start, peak and single-pose illustrations
 
-Alongside it, a **muscle graph** places the primary muscle at the centre with
-its secondaries ranged around it, joined by linework that draws itself in.
+Most RepDB exercises have `start` and `peak` stills. The detail sheet shows the
+start position with an accessible Start/Peak switch; this is a still-image
+selector, not a copied or generated animation. Stretches and holds with one
+`main` image render without empty controls. Every image has explicit dimensions
+and lazy loading to avoid layout shifts.
+
+Entries without a RepDB still retain the original movement and muscle diagrams
+from `app/js/diagrams.js`.
+
+## Why the other dataset's GIFs are not here
+
+[`hasaneyldrm/exercises-dataset`](https://github.com/hasaneyldrm/exercises-dataset)
+has an explicit **MEDIA EXCEPTION**: its images and videos are © Gym Visual and
+cloning grants no license to them. IronLog therefore ships none of those GIFs or
+thumbnails. The MIT grant still covers that source's exercise data and
+instruction text, whose attribution is retained in [`NOTICE`](../../NOTICE).
 
 ## Supplying your own media
 
-If you have media you are entitled to publish — your own footage, a licence from
-Gym Visual, or anything else you hold the rights to — drop it in this directory
-named by the exercise id:
+If you have media you are entitled to publish, place it directly in this
+directory (not in `repdb/`) named by exercise id:
 
-```
+```text
 app/media/ds-0289.gif
 app/media/ds-0289.webp
 app/media/ds-0289.mp4
 app/media/ds-0289.jpg
 ```
 
-The id is the one shown in the exercise detail sheet, and for catalogue entries
-it is the `ds-` prefixed id. `MEDIA_EXTENSIONS` in `app/js/diagrams.js` lists the
-extensions probed, in order, and `mediaPath(id, ext)` builds the path.
-
 Then call `exerciseMedia(exercise, { mediaUrl, mediaCredit })` with the resolved
-URL. It renders an `<img>` with `loading="lazy"`, `decoding="async"` and explicit
-`width`/`height` so it cannot shift the layout, plus a `<figcaption>` carrying
-whatever credit you pass.
+URL. An explicitly supplied file takes precedence over catalogue artwork. For
+Gym Visual media, a separate license is still required and the credit
+`© Gym visual — https://gymvisual.com/` is not optional.
 
-**If you do supply Gym Visual media, the credit is not optional** — their terms
-require `© Gym visual — https://gymvisual.com/` to travel with it, and
-`exerciseMedia()` uses exactly that string as its default for this reason.
+## Guards
 
-## The guard
-
-`tests/catalogue.test.js` asserts that no media reference survives into the
-shipped data, and the deploy workflow has a step (`Assert no third-party media
-is shipped`) that fails the build if a binary media file is committed anywhere
-outside `assets/img/` and `app/icons/`. Adding files here deliberately will trip
-that step; that is the guard working, not a bug. If you are adding media you
-have the rights to, update the workflow's exclusion list in the same commit so
-the intent is recorded.
+`tests/catalogue.test.js` keeps the original Gym Visual media block intact.
+`tests/repdb.test.js` checks the separate RepDB free-tier grant and assets. The
+deploy workflow allows binary exercise media only under `app/media/repdb/` and
+rejects unexpected images, videos, premium paths and missing attribution.

@@ -1,290 +1,382 @@
 /**
- * IronLog — landing page behaviour.
+ * IronLog — landing composition and motion.
  *
- * The page's authored moment is the hero log sheet writing itself: rows wiped in
- * down the page, ticks drawing their own checks, the PR mark stamped, totals
- * rolled last. That is all in CSS, keyed off markup, so it runs whether or not
- * this script loads.
- *
- * What lives here is the part CSS cannot do on its own:
- *   - reveals that need to fire on SCROLL rather than on load
- *   - counters that roll to a real value once they are in view
- *   - the cursor tilt on the hero sheet, and its opt-outs
- *   - the footer curtain and the masthead nav spy
- *
- * Every effect degrades to a fully visible, fully correct page if this script
- * never runs: the animated state is the DEFAULT and the keyframes run from an
- * offset, so no content is ever hidden waiting on JS. No analytics, no
- * third-party requests, nothing that phones home.
+ * No animation dependency and no intercepted scrolling. Two sticky product
+ * scenes read native scroll position in one requestAnimationFrame pass. All
+ * content is readable before this module runs; reduced motion keeps the
+ * finished, stacked compositions.
  */
 
-const motionQuery = globalThis.matchMedia?.("(prefers-reduced-motion: reduce)") ?? null;
-const prefersReducedMotion = () => Boolean(motionQuery?.matches);
-const canObserve = "IntersectionObserver" in globalThis;
-/** Touch devices get no tilt and no hover-dependent motion. */
-const hasHover = globalThis.matchMedia?.("(hover: hover)").matches ?? false;
+const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+const hero = document.querySelector(".hero-scene");
+const showcase = document.querySelector(".showcase-scene");
+const scenes = [hero, showcase].filter(Boolean);
+let frameRequest = 0;
+let scenesLive = false;
+let showcaseMetrics = { restX: 80, restY: 70, recordX: 50, recordY: 92 };
 
-/* ------------------------------------------------------------------------- *
- * Scroll reveals
- * ------------------------------------------------------------------------- */
+const clamp = (value, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+const ease = (value) => 1 - Math.pow(1 - clamp(value), 3);
+const formatNumber = (value) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 }).format(value);
 
-/**
- * Assign each reveal a variant by ROLE so the page never repeats one identical
- * entrance down its length: headings rise, rows are written, rules draw, marks
- * stamp. Deterministic from the element's own tag and classes.
- */
-function revealVariant(el) {
-  const explicit = el.getAttribute("data-reveal");
-  if (explicit && explicit !== "auto") return explicit;
-  const cls = String(el.className || "");
-  const tag = el.tagName.toLowerCase();
-  if (/record-mark|pr-|stamp/.test(cls)) return "stamp";
-  if (/menu|ledger-list|faq|library-grid|cardstub/.test(cls)) return "write";
-  if (/logsheet-foot|rule|leader/.test(cls)) return "rule";
-  if (/^h[1-6]$/.test(tag) || /lede|proof-line/.test(cls)) return "rise";
-  return "write";
+function canHoldScenes() {
+  return !motionQuery.matches && window.innerHeight >= 620;
 }
 
-/**
- * Reveal on scroll. Without JS, without IntersectionObserver, or under reduced
- * motion, every element is simply left in its final state and nothing is
- * observed - the CSS defaults are already the visible ones.
- */
-function initReveals() {
-  const els = [...document.querySelectorAll("[data-reveal]")];
-  if (els.length === 0) return;
+function measureShowcase() {
+  if (!showcase) return;
+  const ui = showcase.querySelector(".showcase-ui");
+  const rest = showcase.querySelector(".session-rest strong");
+  const record = showcase.querySelector(".session-record strong");
+  if (!ui || !rest || !record) return;
+  const uiRect = ui.getBoundingClientRect();
+  const restRect = rest.getBoundingClientRect();
+  const recordRect = record.getBoundingClientRect();
+  if (uiRect.height === 0) return;
+  showcaseMetrics = {
+    restX: ((restRect.left + restRect.width / 2 - uiRect.left) / uiRect.width) * 100,
+    restY: ((restRect.top + restRect.height / 2 - uiRect.top) / uiRect.height) * 100,
+    recordX: ((recordRect.left + recordRect.width / 2 - uiRect.left) / uiRect.width) * 100,
+    recordY: ((recordRect.top + recordRect.height / 2 - uiRect.top) / uiRect.height) * 100,
+  };
+}
 
-  if (prefersReducedMotion() || !canObserve) {
-    for (const el of els) el.classList.add("is-revealed");
-    return;
+function setSceneMode() {
+  scenesLive = canHoldScenes();
+  for (const scene of scenes) {
+    scene.classList.toggle("is-live", scenesLive);
+    scene.classList.toggle("is-rest", !scenesLive);
   }
 
-  for (const el of els) el.setAttribute("data-reveal", revealVariant(el));
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      // Stagger by order of appearance in this batch, not by DOM index, so a
-      // long list never leaves its last item waiting seconds.
-      const batch = entries.filter((e) => e.isIntersecting);
-      batch.forEach((entry, i) => {
-        entry.target.style.setProperty("--reveal-delay", `${i * 70}ms`);
-        entry.target.classList.add("is-revealed");
-        observer.unobserve(entry.target);
-      });
-    },
-    { threshold: 0.1, rootMargin: "0px 0px -6% 0px" },
-  );
-
-  for (const el of els) observer.observe(el);
-}
-
-/* ------------------------------------------------------------------------- *
- * Counters
- * ------------------------------------------------------------------------- */
-
-/**
- * Roll the digits of a figure to its real value.
- *
- * Only ever called on elements carrying data-count-to, and the true value is
- * already in the markup, so this can only ever animate toward a number the page
- * was already telling the truth about. Tabular mono makes the columns line up
- * while the digits move.
- */
-/**
- * Format a count the way the page already writes it, thousands separators
- * included. Without this, rolling data-count-to="1388" would replace the
- * markup's "1,388" with "1388" - a real regression hiding inside an animation.
- */
-function formatCount(value, decimals) {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: decimals,
-      maximumFractionDigits: decimals,
-    }).format(Number(value));
-  } catch {
-    return Number(value).toFixed(decimals);
-  }
-}
-
-function odometerMarkup(value, decimals) {
-  return formatCount(value, decimals)
-    .split("")
-    .map((ch) => {
-      if (!/[0-9]/.test(ch)) return `<span class="odo-static">${ch}</span>`;
-      const strip = Array.from({ length: 10 }, (_, d) => `<i>${d}</i>`).join("");
-      return `<span class="odo-digit"><span class="odo-strip" style="--to:${ch}">${strip}</span></span>`;
-    })
-    .join("");
-}
-
-function initCounters() {
-  const els = [...document.querySelectorAll("[data-count-to]")];
-  if (els.length === 0) return;
-
-  const settle = (el) => {
-    const to = Number(el.getAttribute("data-count-to"));
-    const decimals = Number(el.getAttribute("data-count-decimals")) || 0;
-    if (!Number.isFinite(to)) return;
-    const text = formatCount(to, decimals);
-    el.setAttribute("data-value", text);
-    if (prefersReducedMotion()) {
-      el.textContent = text;
-      return;
+  const frames = [...document.querySelectorAll("[data-hero-frame]")];
+  for (const frame of frames) {
+    if (scenesLive) {
+      const active = Number(frame.dataset.heroFrame) === 0;
+      frame.inert = !active;
+      frame.setAttribute("aria-hidden", String(!active));
+      frame.classList.toggle("is-active", active);
+    } else {
+      frame.inert = false;
+      frame.removeAttribute("aria-hidden");
+      frame.classList.add("is-active");
     }
-    el.innerHTML = odometerMarkup(to, decimals);
-    void el.offsetWidth; // flush so the transition runs from the 0 position
-    el.classList.add("is-rolled");
-  };
+  }
 
-  if (prefersReducedMotion() || !canObserve) {
-    for (const el of els) settle(el);
+  if (!scenesLive) {
+    hero?.style.removeProperty("--reel-y");
+    showcase?.style.removeProperty("--showcase-scale");
+    showcase?.style.removeProperty("--showcase-origin");
+    showcase?.style.removeProperty("--showcase-bottom-o");
+    showcase?.style.removeProperty("--showcase-bottom-y");
+    showcase?.style.removeProperty("--showcase-caption-o");
+    showcase?.style.removeProperty("--showcase-caption-y");
+  }
+  measureShowcase();
+  queueSceneUpdate();
+}
+
+function sceneProgress(scene) {
+  const rect = scene.getBoundingClientRect();
+  const hold = Math.max(1, rect.height - window.innerHeight);
+  return clamp(-rect.top / hold);
+}
+
+function updateHero() {
+  if (!hero) return;
+  const progress = sceneProgress(hero);
+  const viewport = hero.querySelector("[data-hero-viewport]");
+  if (!viewport) return;
+
+  const step = viewport.getBoundingClientRect().height + 24;
+  const position = progress * 2;
+  hero.style.setProperty("--reel-y", `${(-position * step).toFixed(2)}px`);
+  hero.style.setProperty("--p", progress.toFixed(4));
+
+  const activeIndex = Math.round(position);
+  hero.dataset.beat = String(activeIndex);
+  for (const frame of hero.querySelectorAll("[data-hero-frame]")) {
+    const active = Number(frame.dataset.heroFrame) === activeIndex;
+    frame.inert = !active;
+    frame.setAttribute("aria-hidden", String(!active));
+    frame.classList.toggle("is-active", active);
+  }
+}
+
+function updateShowcase() {
+  if (!showcase) return;
+  const progress = sceneProgress(showcase);
+  let scale;
+  let originX;
+  let originY;
+  // Transform-origin is solved from the timer/value we want centred at each
+  // end scale, on both axes. This stays correct when fonts, copy or the
+  // viewport change the interface's geometry.
+  const originFor = (target, atScale) => (target - 50 / atScale) / (1 - 1 / atScale);
+  const restOriginX = originFor(showcaseMetrics.restX, 1.8);
+  const restOriginY = originFor(showcaseMetrics.restY, 1.8);
+  const recordOriginX = originFor(showcaseMetrics.recordX, 3.2);
+  const recordOriginY = originFor(showcaseMetrics.recordY, 3.2);
+
+  if (progress <= 0.5) {
+    const local = ease(progress * 2);
+    scale = 1 + local * 0.8;
+    originX = 50 + local * (restOriginX - 50);
+    originY = 50 + local * (restOriginY - 50);
+  } else {
+    const local = ease((progress - 0.5) * 2);
+    scale = 1.8 + local * 1.4;
+    originX = restOriginX + local * (recordOriginX - restOriginX);
+    originY = restOriginY + local * (recordOriginY - restOriginY);
+  }
+
+  const bottomOpacity = clamp((progress - 0.25) / 0.18);
+  const captionOpacity = clamp((progress - 0.72) / 0.16);
+  showcase.style.setProperty("--showcase-scale", scale.toFixed(4));
+  showcase.style.setProperty("--showcase-origin", `${originX.toFixed(2)}% ${originY.toFixed(2)}%`);
+  showcase.style.setProperty("--showcase-bottom-o", bottomOpacity.toFixed(3));
+  showcase.style.setProperty("--showcase-bottom-y", `${(30 * (1 - bottomOpacity)).toFixed(2)}px`);
+  showcase.style.setProperty("--showcase-caption-o", captionOpacity.toFixed(3));
+  showcase.style.setProperty("--showcase-caption-y", `${(20 * (1 - captionOpacity)).toFixed(2)}px`);
+  showcase.style.setProperty("--p", progress.toFixed(4));
+  showcase.dataset.beat = String(Math.min(2, Math.floor(progress * 3)));
+}
+
+function updateScenes() {
+  frameRequest = 0;
+  if (!scenesLive) return;
+  updateHero();
+  updateShowcase();
+}
+
+function queueSceneUpdate() {
+  if (!frameRequest && scenesLive) frameRequest = requestAnimationFrame(updateScenes);
+}
+
+window.addEventListener("scroll", queueSceneUpdate, { passive: true });
+window.addEventListener("resize", queueSceneUpdate, { passive: true });
+window.addEventListener("resize", () => {
+  measureShowcase();
+  // Crossing the short-screen or reduced-motion boundary changes layout, not
+  // just coordinates, so rebuild the scene mode before measuring again.
+  if (scenesLive !== canHoldScenes()) setSceneMode();
+}, { passive: true });
+
+if (typeof motionQuery.addEventListener === "function") {
+  motionQuery.addEventListener("change", () => {
+    document.documentElement.classList.toggle("motion-ok", !motionQuery.matches);
+    setSceneMode();
+    initReveals();
+    initWordCycle();
+  });
+}
+
+if (document.fonts?.ready) document.fonts.ready.then(() => {
+  measureShowcase();
+  queueSceneUpdate();
+});
+setSceneMode();
+
+// ── The live sample: real arithmetic and a real rest countdown ────────────
+
+const sample = {
+  weight: document.querySelector("#sample-weight"),
+  reps: document.querySelector("#sample-reps"),
+  orm: document.querySelector("[data-sample-orm]"),
+  volume: document.querySelector("[data-sample-volume]"),
+  restVolume: document.querySelector("[data-rest-volume]"),
+  button: document.querySelector("[data-complete-sample]"),
+  frame: document.querySelector(".reel-set"),
+  announcement: document.querySelector("[data-sample-announcement]"),
+  restReadout: document.querySelector("[data-rest-readout]"),
+  restFill: document.querySelector("[data-rest-fill]"),
+  endsAt: 0,
+  interval: 0,
+  complete: false,
+};
+
+function sampleValues() {
+  const weight = clamp(Number(sample.weight?.value) || 85, 1, 500);
+  const reps = Math.round(clamp(Number(sample.reps?.value) || 6, 1, 30));
+  return { weight, reps, volume: weight * reps, oneRm: weight * (1 + reps / 30) };
+}
+
+function renderSample() {
+  if (!sample.weight || !sample.reps) return;
+  const { volume, oneRm } = sampleValues();
+  if (sample.orm) sample.orm.textContent = `${formatNumber(oneRm)} kg`;
+  if (sample.volume) sample.volume.textContent = formatNumber(volume);
+  if (sample.restVolume) sample.restVolume.textContent = `${formatNumber(volume)} kg`;
+}
+
+function resetSampleCompletion() {
+  sample.complete = false;
+  sample.frame?.classList.remove("is-complete");
+  if (sample.button) {
+    sample.button.disabled = false;
+    const label = sample.button.querySelector("span");
+    if (label) label.textContent = "Complete set";
+  }
+  renderSample();
+}
+
+for (const input of [sample.weight, sample.reps]) {
+  input?.addEventListener("input", resetSampleCompletion);
+}
+renderSample();
+
+function updateRest() {
+  if (!sample.endsAt) return;
+  const left = Math.max(0, Math.ceil((sample.endsAt - Date.now()) / 1000));
+  const minutes = String(Math.floor(left / 60)).padStart(2, "0");
+  const seconds = String(left % 60).padStart(2, "0");
+  if (sample.restReadout) sample.restReadout.textContent = `${minutes}:${seconds}`;
+  if (sample.restFill) sample.restFill.style.width = `${(left / 90) * 100}%`;
+  if (left === 0) {
+    clearInterval(sample.interval);
+    sample.interval = 0;
+    sample.endsAt = 0;
+    if (sample.announcement) sample.announcement.textContent = "Sample rest complete.";
+  }
+}
+
+function startRest() {
+  clearInterval(sample.interval);
+  sample.endsAt = Date.now() + 90_000;
+  updateRest();
+  sample.interval = window.setInterval(updateRest, 1000);
+}
+
+sample.button?.addEventListener("click", () => {
+  if (sample.complete) return;
+  const { volume, oneRm } = sampleValues();
+  sample.complete = true;
+  sample.frame?.classList.add("is-complete");
+  sample.button.disabled = true;
+  const label = sample.button.querySelector("span");
+  if (label) label.textContent = "Set logged";
+  if (sample.announcement) {
+    sample.announcement.textContent = `Set complete. ${formatNumber(volume)} kilograms of volume. Estimated one-rep max ${formatNumber(oneRm)} kilograms. Rest started.`;
+  }
+  startRest();
+
+  // Advancing the reel advances the native scrollbar too, so the two never
+  // disagree. Reduced-motion visitors already see every frame and stay put.
+  if (scenesLive && hero) {
+    window.setTimeout(() => {
+      const top = hero.getBoundingClientRect().top + window.scrollY;
+      const hold = hero.getBoundingClientRect().height - window.innerHeight;
+      window.scrollTo({ top: top + hold * 0.5, behavior: motionQuery.matches ? "auto" : "smooth" });
+    }, 850);
+  }
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && sample.endsAt) updateRest();
+});
+
+// ── Four composition-specific reveals; nothing stays hidden without JS ────
+
+let revealObserver = null;
+let counterObserver = null;
+
+function animateCounter(node) {
+  if (node.dataset.rolled === "true") return;
+  node.dataset.rolled = "true";
+  const target = Number(node.dataset.roll);
+  if (!Number.isFinite(target) || motionQuery.matches) {
+    node.textContent = formatNumber(target);
     return;
   }
 
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        settle(entry.target);
-        observer.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.5 },
-  );
-
-  for (const el of els) observer.observe(el);
+  const start = performance.now();
+  const duration = 950;
+  const tick = (now) => {
+    const progress = clamp((now - start) / duration);
+    const value = Math.round(target * ease(progress));
+    node.textContent = formatNumber(value);
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
-/* ------------------------------------------------------------------------- *
- * Cursor tilt on the hero sheet
- * ------------------------------------------------------------------------- */
+function initReveals() {
+  revealObserver?.disconnect();
+  counterObserver?.disconnect();
+  const reveals = [...document.querySelectorAll("[data-reveal]")];
+  const counters = [...document.querySelectorAll("[data-roll]")];
 
-/**
- * The one object on the page that answers the cursor.
- *
- * Kept under 5deg, rAF-throttled, and disabled on touch, under reduced motion,
- * and when the sheet has scrolled out of view - a transform running on an
- * offscreen element is wasted work on a laptop battery.
- */
-function initTilt() {
-  const sheet = document.querySelector("[data-tilt]");
-  if (!sheet) return;
-  if (prefersReducedMotion() || !hasHover) return;
+  if (motionQuery.matches || !("IntersectionObserver" in window)) {
+    for (const node of reveals) node.classList.add("in-view");
+    for (const node of counters) animateCounter(node);
+    return;
+  }
 
-  const MAX = 4.2;
-  let frame = 0;
-  let inView = true;
+  revealObserver = new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add("in-view");
+      observer.unobserve(entry.target);
+    }
+  }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
 
-  const onMove = (event) => {
-    if (!inView) return;
-    const rect = sheet.getBoundingClientRect();
-    const px = (event.clientX - rect.left) / Math.max(rect.width, 1) - 0.5;
-    const py = (event.clientY - rect.top) / Math.max(rect.height, 1) - 0.5;
-    if (frame) cancelAnimationFrame(frame);
-    frame = requestAnimationFrame(() => {
-      sheet.style.setProperty("--tilt-x", `${(-py * MAX).toFixed(2)}deg`);
-      sheet.style.setProperty("--tilt-y", `${(px * MAX).toFixed(2)}deg`);
-    });
-  };
+  counterObserver = new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      animateCounter(entry.target);
+      observer.unobserve(entry.target);
+    }
+  }, { threshold: 0.45 });
 
-  const onLeave = () => {
-    if (frame) cancelAnimationFrame(frame);
-    sheet.style.setProperty("--tilt-x", "0deg");
-    sheet.style.setProperty("--tilt-y", "0deg");
-  };
-
-  sheet.addEventListener("pointermove", onMove, { passive: true });
-  sheet.addEventListener("pointerleave", onLeave, { passive: true });
-
-  if (canObserve) {
-    const io = new IntersectionObserver(
-      (entries) => {
-        inView = entries.some((e) => e.isIntersecting);
-        if (!inView) onLeave();
-      },
-      { threshold: 0.05 },
-    );
-    io.observe(sheet);
+  for (const node of reveals) {
+    if (!node.classList.contains("in-view")) revealObserver.observe(node);
+  }
+  for (const node of counters) {
+    if (node.dataset.rolled !== "true") counterObserver.observe(node);
   }
 }
 
-/* ------------------------------------------------------------------------- *
- * Footer curtain
- * ------------------------------------------------------------------------- */
-
-/**
- * The footer rises as a curtain.
- *
- * The hidden state is applied only once this script has run (via `.js-reveal`
- * on the document element), so a browser without JS, without
- * IntersectionObserver, or with reduced motion never loses the content.
- */
-function initCurtainFooter() {
-  const inner = document.querySelector(".foot-inner");
-  if (!inner) return;
-
-  if (prefersReducedMotion() || !canObserve) return;
-
-  document.documentElement.classList.add("js-reveal");
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        entry.target.classList.add("is-visible");
-        observer.unobserve(entry.target);
-      }
-    },
-    { threshold: 0.15, rootMargin: "0px 0px -32px 0px" },
-  );
-
-  observer.observe(inner);
-}
-
-/* ------------------------------------------------------------------------- *
- * Nav spy
- * ------------------------------------------------------------------------- */
-
-/** Mark the section the reader is in, in the masthead nav. */
-function initNavSpy() {
-  const links = [...document.querySelectorAll(".masthead-nav a[href^='#']")];
-  if (links.length === 0 || !canObserve) return;
-
-  const byId = new Map(links.map((link) => [link.getAttribute("href").slice(1), link]));
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      for (const entry of entries) {
-        const link = byId.get(entry.target.id);
-        if (!link) continue;
-        // A class rather than an inline colour, so the palette stays in CSS.
-        link.classList.toggle("is-current", entry.isIntersecting);
-        if (entry.isIntersecting) link.setAttribute("aria-current", "true");
-        else link.removeAttribute("aria-current");
-      }
-    },
-    { threshold: 0.28, rootMargin: "-64px 0px -45% 0px" },
-  );
-
-  for (const id of byId.keys()) {
-    const section = document.getElementById(id);
-    if (section) observer.observe(section);
-  }
-}
-
-/* ------------------------------------------------------------------------- *
- * Menu leaders
- * ------------------------------------------------------------------------- */
-
-/** Index the capabilities menu so its leaders draw one after another. */
-function initMenuIndex() {
-  const items = document.querySelectorAll(".menu dt, .menu dd");
-  items.forEach((el, i) => el.style.setProperty("--i", String(Math.floor(i / 2))));
-}
-
-initMenuIndex();
 initReveals();
-initCounters();
-initTilt();
-initCurtainFooter();
-initNavSpy();
+
+// ── Privacy statement: one fact lights at a time, only while on screen ────
+
+let wordObserver = null;
+let wordTimer = 0;
+
+function initWordCycle() {
+  wordObserver?.disconnect();
+  clearInterval(wordTimer);
+  wordTimer = 0;
+  const root = document.querySelector("[data-word-cycle]");
+  if (!root) return;
+  const words = [...root.children];
+
+  if (motionQuery.matches || !("IntersectionObserver" in window)) {
+    for (const word of words) word.classList.add("is-lit");
+    return;
+  }
+
+  let index = 0;
+  const show = () => {
+    for (const [i, word] of words.entries()) word.classList.toggle("is-lit", i === index);
+    index = (index + 1) % words.length;
+  };
+
+  wordObserver = new IntersectionObserver(([entry]) => {
+    clearInterval(wordTimer);
+    wordTimer = 0;
+    if (entry.isIntersecting && !document.hidden) {
+      show();
+      wordTimer = window.setInterval(show, 900);
+    } else {
+      for (const word of words) word.classList.remove("is-lit");
+    }
+  }, { threshold: 0.35 });
+  wordObserver.observe(root);
+}
+
+initWordCycle();
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) initWordCycle();
+  else clearInterval(wordTimer);
+});

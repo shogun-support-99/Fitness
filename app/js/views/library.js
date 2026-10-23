@@ -1,7 +1,7 @@
 /**
  * IronLog — Exercise library view.
  *
- * With the external catalogue merged in the library holds around 1,400
+ * With the external catalogue merged in the library holds around 1,900
  * entries, so results are relevance-ranked and capped; rendering every row on
  * an empty search would cost more than the interaction is worth. A detail
  * sheet shows the taxonomy plus step-by-step instructions, which are fetched
@@ -11,7 +11,7 @@
 import { EQUIPMENT, MUSCLE_GROUPS, searchExercises } from "../exercises.js";
 import { availableLanguages, hasInstructions } from "../catalogue.js";
 import { emptyState, esc, icon, muscleBadge } from "../ui.js";
-import { exerciseMedia, muscleDiagram, movementClass } from "../diagrams.js";
+import { exerciseMedia, exerciseThumbnail, muscleDiagram, movementClass } from "../diagrams.js";
 
 /** Rows rendered before asking the user to narrow the search. */
 export const RESULT_CAP = 120;
@@ -27,7 +27,7 @@ export function renderLibrary(store, { query = "", muscle = "all" } = {}) {
     <section class="view view-library">
       <header class="view-head">
         <div>
-          <h1>Library</h1>
+          <h1>Exercises</h1>
           <p class="view-subline">
             ${all.length} exercise${all.length === 1 ? "" : "s"}${customCount ? ` · ${customCount} custom` : ""}
             ${catalogueReady ? "" : " · loading catalogue…"}
@@ -74,18 +74,23 @@ export function renderLibrary(store, { query = "", muscle = "all" } = {}) {
   `;
 }
 
-function renderLibraryRow(exercise) {
+export function renderLibraryRow(exercise) {
   const secondary = exercise.secondaryMuscles?.length
     ? exercise.secondaryMuscles.slice(0, 3).join(", ")
     : "";
   return `
     <li class="library-row">
       <button class="library-open" data-action="open-exercise" data-id="${esc(exercise.id)}">
+        ${exerciseThumbnail(exercise)}
         <span class="library-main">
           <span class="library-name">
             ${esc(exercise.name)}
             ${exercise.custom ? `<em class="pill pill-custom">custom</em>` : ""}
-            ${exercise.source === "dataset" ? `<em class="pill pill-data">catalogue</em>` : ""}
+            ${exercise.media?.provider === "repdb"
+              ? `<em class="pill pill-data">illustrated</em>`
+              : exercise.source === "dataset" || exercise.source === "repdb"
+                ? `<em class="pill pill-data">catalogue</em>`
+                : ""}
           </span>
           <span class="library-meta">
             ${muscleBadge(exercise.muscle)}
@@ -148,16 +153,16 @@ export function renderExerciseDetail(exercise, { store = null, stepsResult = nul
         ${exercise.category && exercise.category !== exercise.bodyPart
           ? `<span class="tag">category · ${esc(exercise.category)}</span>`
           : ""}
+        ${exercise.trainingCategory ? `<span class="tag">type · ${esc(exercise.trainingCategory)}</span>` : ""}
+        ${exercise.difficulty ? `<span class="tag">level · ${esc(exercise.difficulty)}</span>` : ""}
       </div>
 
       ${/*
-        The media slot. IronLog ships no third-party exercise media: the dataset's
-        GIFs are (c) Gym Visual under an explicit MEDIA EXCEPTION that cloning does
-        not transfer. This renders a licensed local file when the user supplies one
-        (app/media/README.md), and otherwise an original movement diagram drawn
-        from the exercise's own MIT-licensed fields.
+        RepDB's free-tier stills are licensed for in-app use with attribution.
+        Gym Visual GIFs remain excluded. Entries without a licensed still keep
+        the original data-drawn movement diagram.
       */ ""}
-      <div class="detail-visual" data-reveal="draw">
+      <div class="detail-visual ${exercise.media?.provider === "repdb" ? "has-media" : ""}" data-reveal="draw">
         ${exerciseMedia(exercise)}
         ${muscleDiagram(exercise) || ""}
       </div>
@@ -190,7 +195,7 @@ export function renderExerciseDetail(exercise, { store = null, stepsResult = nul
              ${icon("bolt")} Start a workout with this
            </button>`}
 
-      ${hasSteps ? renderAttribution(store) : ""}
+      ${hasSteps || exercise.media ? renderAttribution(store, exercise) : ""}
     </div>`;
 }
 
@@ -231,16 +236,34 @@ function renderInstructions(exercise, { languages, currentLang, stepsResult, ste
     </div>`;
 }
 
-function renderAttribution(store) {
+function renderAttribution(store, exercise) {
   const meta = store?.catalogueMeta;
-  const source = meta?.source;
-  return `
+  const source = meta?.sources?.dataset ?? meta?.source;
+  const repdbSource = meta?.sources?.repdb ?? meta?.repdb?.source;
+  const stepsId = String(exercise?.stepsId ?? "");
+  const usesRepDB =
+    exercise?.source === "repdb" || exercise?.media?.provider === "repdb" || stepsId.startsWith("repdb-");
+  const usesDataset = exercise?.source === "dataset" || stepsId.startsWith("ds-");
+  const credits = [];
+
+  if (usesDataset) {
+    credits.push(`
     <p class="detail-attribution">
       Exercise data and instruction text from
       <a href="https://github.com/hasaneyldrm/exercises-dataset" rel="noopener noreferrer" target="_blank">hasaneyldrm/exercises-dataset</a>,
       MIT licensed, © 2026 Hasan Emir Yıldırım${source?.commit ? ` · commit ${esc(String(source.commit).slice(0, 7))}` : ""}.
-      Media from that dataset is not redistributed here.
-    </p>`;
+      Gym Visual media from that dataset is not redistributed here.
+    </p>`);
+  }
+  if (usesRepDB) {
+    credits.push(`
+    <p class="detail-attribution">
+      Exercise data by <a href="https://repdb.co" rel="noopener noreferrer" target="_blank">RepDB (repdb.co)</a>,
+      free-tier in-app use with attribution${repdbSource?.commit ? ` · commit ${esc(String(repdbSource.commit).slice(0, 7))}` : ""}.
+      Premium evaluation animations are not included.
+    </p>`);
+  }
+  return credits.join("");
 }
 
 function renderCustomSheet() {

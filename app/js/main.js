@@ -25,10 +25,10 @@ import {
 } from "./motion.js";
 
 import { renderHome } from "./views/home.js";
-import { renderWorkout, PICKER_CAP } from "./views/workout.js";
+import { renderWorkout, renderPickerRow, PICKER_CAP } from "./views/workout.js";
 import { renderHistory } from "./views/history.js";
 import { renderStats } from "./views/stats.js";
-import { renderLibrary, renderExerciseDetail, RESULT_CAP } from "./views/library.js";
+import { renderLibrary, renderLibraryRow, renderExerciseDetail, RESULT_CAP } from "./views/library.js";
 import { renderSettings } from "./views/settings.js";
 
 const store = new Store();
@@ -53,6 +53,8 @@ const $ = (selector, root = document) => root.querySelector(selector);
  * leaks for the life of the page. A logger stays open for an hour.
  */
 let motionTeardowns = [];
+let lastRenderedRoute = null;
+let routeAnimationTimer = 0;
 function teardownMotion() {
   for (const fn of motionTeardowns) {
     try { fn(); } catch { /* a torn-down observer is not an error */ }
@@ -109,7 +111,19 @@ function render(navigation = router.current) {
   const focusKey = focusBefore?.dataset?.focusKey ?? null;
 
   const view = VIEWS[navigation.route] ?? VIEWS.home;
+  const routeChanged = lastRenderedRoute !== null && lastRenderedRoute !== navigation.route;
   outlet.innerHTML = view(navigation.params);
+  lastRenderedRoute = navigation.route;
+
+  // Navigate as one workspace, not as a page full of independent entrances.
+  // Same-route logging updates never replay this transition.
+  if (routeChanged && !prefersReducedMotion()) {
+    clearTimeout(routeAnimationTimer);
+    outlet.classList.remove("is-entering");
+    void outlet.offsetWidth;
+    outlet.classList.add("is-entering");
+    routeAnimationTimer = window.setTimeout(() => outlet.classList.remove("is-entering"), 320);
+  }
 
   // Motion is wired after the markup exists, and torn down before the next
   // render, so a view change never leaves an observer on detached nodes.
@@ -131,6 +145,9 @@ function syncNav(route) {
     item.classList.toggle("is-active", isActive);
     item.setAttribute("aria-current", isActive ? "page" : "false");
   });
+  const primaryItems = $$(".sidebar .nav-item");
+  const index = Math.max(0, primaryItems.findIndex((item) => item.dataset.route === route));
+  primaryItems[0]?.parentElement?.style.setProperty("--active-nav-index", String(index));
 }
 
 /** Keep focus where the user was after a re-render, using data-focus-key. */
@@ -360,7 +377,7 @@ const actions = {
     if (recordDetail) {
       const target =
         $('[data-focus-key="set-row-' + el.dataset.entry + "-" + el.dataset.set + '"]') ||
-        $(".logger-clock") ||
+        $(".logger-metrics") ||
         $("#view-outlet");
       celebrateRecord(target, recordDetail);
     }
@@ -419,6 +436,20 @@ const actions = {
       c.classList.toggle("is-active", c.dataset.muscle === libraryState.muscle),
     );
     filterLibraryList();
+  },
+
+  "set-exercise-pose": (el) => {
+    const figure = el.closest("[data-repdb-media]");
+    const pose = el.dataset.pose;
+    const url = figure?.dataset?.[pose];
+    const image = figure?.querySelector('[data-role="exercise-pose-image"]');
+    if (!url || !image) return;
+    image.src = url;
+    image.dataset.pose = pose;
+    image.alt = `${detailState.exercise?.name ?? "Exercise"} ${pose} position`;
+    figure.querySelectorAll("[data-action='set-exercise-pose']").forEach((button) => {
+      button.setAttribute("aria-pressed", String(button === el));
+    });
   },
 
   // Custom exercises
@@ -622,17 +653,17 @@ function updateSetRowInPlace(input) {
     const oneRm = weight > 0 && reps > 0 ? estimatedOneRepMax(weight, reps) : 0;
     oneRmNode.textContent = oneRm > 0 ? compactNumber(oneRm) : "—";
   }
-  const headVolume = $('.logger-clock span');
-  if (headVolume) {
-    const active = store.activeWorkout();
-    if (active) {
-      const doneSets = active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
-      const volume = active.exercises.reduce(
-        (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
-        0,
-      );
-      headVolume.textContent = `${doneSets} sets · ${compactNumber(volume)} ${store.settings.units}`;
-    }
+  const active = store.activeWorkout();
+  if (active) {
+    const doneSets = active.exercises.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
+    const volume = active.exercises.reduce(
+      (sum, e) => sum + e.sets.filter((s) => s.done).reduce((v, s) => v + (Number(s.weight) || 0) * (Number(s.reps) || 0), 0),
+      0,
+    );
+    const volumeNode = $(".logger-metrics > span:nth-child(2) strong");
+    const setsNode = $(".logger-metrics > span:nth-child(3) strong");
+    if (volumeNode) volumeNode.textContent = `${compactNumber(volume)} ${store.settings.units}`;
+    if (setsNode) setsNode.textContent = String(doneSets);
   }
 }
 
@@ -688,18 +719,7 @@ function filterPicker() {
   const shown = results.slice(0, PICKER_CAP);
 
   list.innerHTML = shown.length
-    ? shown
-        .map((e) => {
-          const secondary = e.secondaryMuscles?.length ? e.secondaryMuscles.slice(0, 2).join(", ") : "";
-          return `
-      <li class="picker-row">
-        <button data-action="pick-exercise" data-exercise="${esc(e.id)}">
-          <span class="picker-name">${esc(e.name)}${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}</span>
-          <span class="picker-meta">${esc(e.muscle)} · ${esc(e.equipment)}${secondary ? ` · +${esc(secondary)}` : ""}</span>
-        </button>
-      </li>`;
-        })
-        .join("")
+    ? shown.map((exercise) => renderPickerRow(exercise)).join("")
     : `<li class="picker-empty">No exercises match that search.</li>`;
 
   if (note) {
@@ -717,7 +737,7 @@ function filterPicker() {
 // The sheet paints the taxonomy synchronously, then fills in the numbered
 // instructions once that language's pack resolves. Instructions live in
 // per-language files fetched on demand, so opening one exercise costs at most
-// one pack rather than shipping all ten.
+// one pack rather than shipping every source/language pack.
 
 function renderDetail() {
   const sheet = $("#exercise-detail-sheet");
@@ -780,34 +800,8 @@ function filterLibraryList() {
   // Zero results changes the whole view (empty state plus a create affordance),
   // so hand back to a full render rather than patching the list in place.
   if (results.length === 0) return render();
-  list.innerHTML = results.slice(0, RESULT_CAP).map(libraryRowHtml).join("");
+  list.innerHTML = results.slice(0, RESULT_CAP).map((exercise) => renderLibraryRow(exercise)).join("");
   updateResultNote(results.length);
-}
-
-/** Row markup shared with views/library.js so in-place filtering stays in sync. */
-function libraryRowHtml(e) {
-  const secondary = e.secondaryMuscles?.length ? e.secondaryMuscles.slice(0, 3).join(", ") : "";
-  return `
-    <li class="library-row">
-      <button class="library-open" data-action="open-exercise" data-id="${esc(e.id)}">
-        <span class="library-main">
-          <span class="library-name">
-            ${esc(e.name)}
-            ${e.custom ? `<em class="pill pill-custom">custom</em>` : ""}
-            ${e.source === "dataset" ? `<em class="pill pill-data">catalogue</em>` : ""}
-          </span>
-          <span class="library-meta">
-            <span class="badge badge-${esc(e.muscle)}">${esc(e.muscle)}</span>
-            <span class="equip">${esc(e.equipment)}</span>
-            ${e.target ? `<span class="target">target: ${esc(e.target)}</span>` : ""}
-            ${secondary ? `<span class="secondary">+ ${esc(secondary)}</span>` : ""}
-            ${e.note ? `<span class="note">${icon("info")} ${esc(e.note)}</span>` : ""}
-          </span>
-        </span>
-        <span class="library-go">${icon("chevron")}</span>
-      </button>
-      ${e.custom ? `<button class="icon-btn" data-action="delete-custom" data-id="${esc(e.id)}" aria-label="Delete ${esc(e.name)}">${icon("trash")}</button>` : ""}
-    </li>`;
 }
 
 function updateResultNote(total) {
@@ -854,7 +848,9 @@ document.addEventListener("change", (event) => {
   const el = event.target.closest("[data-action]");
   if (!el) return;
   const action = el.dataset.action;
-  if (action === "toggle-autorest" || action === "import-file") actions[action]?.(el, event);
+  if (action === "toggle-autorest" || action === "import-file" || action === "set-instruction-language") {
+    actions[action]?.(el, event);
+  }
 });
 
 document.addEventListener("submit", (event) => {
@@ -888,7 +884,10 @@ document.addEventListener("keydown", (event) => {
 restTimer.subscribe((snapshot) => {
   const bar = $(".timer-bar");
   if (!snapshot.running) {
-    if (bar && router.current.route === "workout") render();
+    // Finishing a workout stops the timer after the store has cleared the
+    // active session. That completion path owns the summary; re-rendering the
+    // now-empty logger here would delete the summary before it can open.
+    if (bar && router.current.route === "workout" && store.activeWorkout()) render();
     return;
   }
   if (!bar) {

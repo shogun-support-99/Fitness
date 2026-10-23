@@ -42,36 +42,53 @@ jobs:
       - name: Verify local asset links resolve
         run: node scripts/check-links.mjs
 
-      # The upstream dataset's MIT grant covers its data and instruction text
-      # only; its images/ and videos/ are (c) Gym Visual and explicitly NOT
-      # licensed by cloning. This guard fails the build if any media reference
-      # or binary asset ever reaches the deployed tree. See NOTICE.
-      - name: Assert no third-party media is shipped
+      # Gym Visual media remains excluded. RepDB's free flat WebP stills have a
+      # separate in-app licence with attribution, so they get a narrow allowlist
+      # and their own provenance/path checks instead of weakening the old guard.
+      - name: Assert media licences and attribution
         run: |
           set -euo pipefail
           fail=0
 
-          echo "-- scanning generated catalogue data --"
+          echo "-- scanning the MIT data catalogue for excluded Gym Visual media --"
           if grep -rioE 'gif_url|media_id|gymvisual|\.(gif|jpe?g|png|webp|mp4|webm)"' app/data/exercises-index.json app/data/steps.*.json; then
-            echo "::error::media reference found in generated catalogue data"
+            echo "::error::media reference found in the original generated catalogue"
             fail=1
           else
-            echo "   clean: no media references in index or step packs"
+            echo "   clean: no media references in the original index or step packs"
           fi
 
-          echo "-- asserting no binary media is committed anywhere --"
-          if git ls-files | grep -iE '\.(gif|jpe?g|png|webp|mp4|webm|mov)$' | grep -viE '^(assets/img/|app/icons/)' ; then
-            echo "::error::unexpected binary media committed outside the app's own artwork"
+          echo "-- scanning RepDB app data for premium, remote or unsupported media --"
+          if grep -rioE 'gif_url|media_id|gymvisual|premium-samples|images/flat|https?://|\.(gif|jpe?g|png|mp4|webm|mov)"' app/data/repdb-index.json app/data/repdb-steps.*.json; then
+            echo "::error::unsupported media reference found in RepDB app data"
             fail=1
           else
-            echo "   clean: only IronLog's own SVG artwork is committed"
+            echo "   clean: RepDB records use local free-tier WebP stills only"
           fi
 
-          echo "-- asserting attribution is present --"
+          echo "-- allowing binary exercise media only in the licensed RepDB directory --"
+          if git ls-files | grep -iE '\.(gif|jpe?g|png|webp|mp4|webm|mov)$' | grep -viE '^(assets/img/|app/icons/|app/media/repdb/)' ; then
+            echo "::error::unexpected binary media outside approved artwork directories"
+            fail=1
+          fi
+          if git ls-files app/media/repdb | grep -viE '\.webp$'; then
+            echo "::error::non-WebP file in RepDB media directory"
+            fail=1
+          fi
+          if git ls-files | grep -i 'premium-samples'; then
+            echo "::error::evaluation-only premium media must not be committed"
+            fail=1
+          fi
+
+          echo "-- asserting attribution and provenance are present --"
           test -f NOTICE || { echo "::error::NOTICE file missing"; fail=1; }
+          test -f LICENSE-REPDB.md || { echo "::error::RepDB licence file missing"; fail=1; }
           grep -q 'hasaneyldrm/exercises-dataset' NOTICE || { echo "::error::NOTICE missing upstream credit"; fail=1; }
-          grep -q 'Gym Visual' NOTICE || { echo "::error::NOTICE missing media exclusion"; fail=1; }
+          grep -q 'Gym Visual' NOTICE || { echo "::error::NOTICE missing Gym Visual media exclusion"; fail=1; }
+          grep -q 'Exercise data by RepDB' NOTICE || { echo "::error::NOTICE missing RepDB attribution"; fail=1; }
+          grep -q 'Exercise data by' app/js/views/settings.js || { echo "::error::app settings lost visible RepDB attribution"; fail=1; }
           grep -q 'Hasan Emir' app/data/catalogue-meta.json || { echo "::error::generated metadata lost the MIT copyright notice"; fail=1; }
+          grep -q 'RepDB/exercise-dataset' app/data/repdb-meta.json || { echo "::error::RepDB provenance missing"; fail=1; }
 
           exit $fail
 

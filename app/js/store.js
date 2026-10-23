@@ -41,8 +41,8 @@ function emptyDocument() {
       units: "kg",
       restSeconds: 120,
       autoStartRestTimer: true,
-      // Light is the crafted reference for the ledger style; dark and auto are
-      // equally supported and persisted per browser.
+      // Bright neutral surfaces are the default; dark and system appearances
+      // are equally supported and the choice is persisted per browser.
       theme: "light",
       instructionLanguage: "en",
     },
@@ -182,7 +182,7 @@ export class Store {
   }
 
   /**
-   * Rebuilding a ~1,400-entry index on every call is wasteful when the logger
+   * Rebuilding a ~1,900-entry index on every call is wasteful when the logger
    * asks for it per render, so it is memoised against the inputs that can
    * change it: catalogue state plus the custom-exercise count.
    */

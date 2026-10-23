@@ -1,26 +1,31 @@
 /**
  * IronLog — external exercise catalogue loader.
  *
- * IronLog ships a small curated starter library inline (exercises.js) plus a
- * much larger catalogue generated from hasaneyldrm/exercises-dataset, which is
- * MIT licensed for its data. That catalogue is fetched rather than imported so
- * the 313 KB index never blocks first paint, and so the app still works fully
- * if the fetch fails.
+ * IronLog ships a curated starter library inline (exercises.js) plus two
+ * fetched catalogues: MIT-licensed data from hasaneyldrm/exercises-dataset and
+ * illustrated records from RepDB's attribution-required free tier. Fetching
+ * rather than importing keeps the indexes off the critical first-paint path,
+ * and the curated library still works if either request fails.
  *
- * Instruction text is split into one file per language and loaded only when an
- * exercise detail is actually opened, so a monolingual user downloads ~600 KB
- * at most rather than all ten packs.
+ * Instruction text is split by source and language and loaded only when an
+ * exercise detail is opened. Eleven languages are available across the two
+ * sources without downloading every pack up front.
  *
- * LICENSING: the upstream MIT grant covers the exercise data and instruction
- * text only. It explicitly does NOT cover the upstream images/ and videos/
- * media, which is (c) Gym Visual and requires a separate licence. The
- * generator strips every media reference and refuses to emit one; nothing in
- * this module references media, and there is no code path that could fetch it.
+ * LICENSING: Gym Visual media from the MIT data source remains excluded.
+ * RepDB's free 512px WebP stills are separately licensed for in-app use with
+ * visible attribution; premium evaluation animations are never included.
  */
 
 const INDEX_PATH = "data/exercises-index.json";
 const META_PATH = "data/catalogue-meta.json";
-const stepsPath = (lang) => `data/steps.${lang}.json`;
+const REPDB_INDEX_PATH = "data/repdb-index.json";
+const REPDB_META_PATH = "data/repdb-meta.json";
+const stepsPath = (lang, provider = "dataset") =>
+  provider === "repdb" ? `data/repdb-steps.${lang}.json` : `data/steps.${lang}.json`;
+const SOURCE_LANGUAGES = {
+  dataset: ["en", "es", "fr", "it", "pl", "ru", "tr", "zh", "hi", "ko"],
+  repdb: ["en", "de", "es"],
+};
 
 /** Strip the "ds-" prefix the generator adds, to key into a step pack. */
 export function rawDatasetId(id) {
@@ -72,10 +77,27 @@ export function mergeCatalogues(curated = [], dataset = []) {
     if (curatedPosition !== undefined) {
       collisions += 1;
       const winner = merged[curatedPosition];
-      if (!winner.stepsId) {
-        merged[curatedPosition] = { ...winner, stepsId: e.id };
+      let enriched = winner;
+      let changed = false;
+
+      // Only curated/custom-shaped records need an instruction link. Catalogue
+      // records already resolve through their own ids, and existing ids must
+      // stay stable for workouts saved before a second source was added.
+      if (!winner.stepsId && winner.source !== "dataset" && winner.source !== "repdb") {
+        enriched = { ...enriched, stepsId: e.id };
         linked += 1;
+        changed = true;
       }
+
+      // A name collision should not throw away RepDB's licensed illustration.
+      // Enrich the winning record without changing its id or instruction link.
+      if (e.media && !winner.media) {
+        if (!changed) enriched = { ...winner };
+        enriched.media = e.media;
+        changed = true;
+      }
+
+      if (changed) merged[curatedPosition] = enriched;
       continue;
     }
 
@@ -112,15 +134,47 @@ async function fetchJson(path, { timeoutMs = 15000 } = {}) {
  */
 export async function loadCatalogue(base = "") {
   const prefix = base ? `${base.replace(/\/+$/, "")}/` : "";
-  const [index, meta] = await Promise.all([
+  const [index, meta, repdbIndex, repdbMeta] = await Promise.all([
     fetchJson(`${prefix}${INDEX_PATH}`),
     fetchJson(`${prefix}${META_PATH}`),
+    fetchJson(`${prefix}${REPDB_INDEX_PATH}`),
+    fetchJson(`${prefix}${REPDB_META_PATH}`),
   ]);
 
-  if (!Array.isArray(index) || index.length === 0) {
+  const baseAvailable = Array.isArray(index) && index.length > 0;
+  const repdbAvailable = Array.isArray(repdbIndex) && repdbIndex.length > 0;
+  if (!baseAvailable && !repdbAvailable) {
     return { exercises: [], meta: null, available: false };
   }
-  return { exercises: index, meta, available: true };
+
+  // Preserve the original result shape when RepDB is unavailable so a partial
+  // deployment degrades exactly as before.
+  if (!repdbAvailable) return { exercises: index, meta, available: true };
+
+  const exercises = [...(baseAvailable ? index : []), ...repdbIndex];
+  const languageMap = new Map();
+  for (const lang of [...(meta?.languages ?? []), ...(repdbMeta?.languages ?? [])]) {
+    if (lang?.code) languageMap.set(lang.code, { ...languageMap.get(lang.code), ...lang });
+  }
+  const languages = [...languageMap.values()];
+  const combinedMeta = {
+    ...(meta ?? {}),
+    counts: {
+      ...(meta?.counts ?? {}),
+      exercises: exercises.length,
+      languages: languages.length,
+      repdbExercises: repdbIndex.length,
+      repdbImages: repdbMeta?.counts?.images ?? 0,
+    },
+    languages,
+    sources: {
+      dataset: meta?.source ?? null,
+      repdb: repdbMeta?.source ?? null,
+    },
+    repdb: repdbMeta ?? null,
+  };
+
+  return { exercises, meta: combinedMeta, available: true };
 }
 
 /**
@@ -131,13 +185,13 @@ export async function loadCatalogue(base = "") {
  */
 const stepCache = new Map();
 
-export function loadSteps(lang = "en", base = "") {
+export function loadSteps(lang = "en", base = "", provider = "dataset") {
   const prefix = base ? `${base.replace(/\/+$/, "")}/` : "";
-  const key = `${prefix}${lang}`;
+  const key = `${prefix}${provider}:${lang}`;
   if (!stepCache.has(key)) {
     stepCache.set(
       key,
-      fetchJson(`${prefix}${stepsPath(lang)}`).then((pack) =>
+      fetchJson(`${prefix}${stepsPath(lang, provider)}`).then((pack) =>
         pack && typeof pack === "object" ? pack : null,
       ),
     );
@@ -156,14 +210,15 @@ export function clearStepsCache() {
  * linked to the losing record's instructions via stepsId.
  */
 export function hasInstructions(exercise) {
-  return Boolean(exercise) && (exercise.source === "dataset" || Boolean(exercise.stepsId));
+  return Boolean(exercise) &&
+    (exercise.source === "dataset" || exercise.source === "repdb" || Boolean(exercise.stepsId));
 }
 
 /** The catalogue id whose instructions apply to this exercise, if any. */
 export function stepsKey(exercise) {
   if (!exercise) return null;
   if (exercise.stepsId) return exercise.stepsId;
-  return exercise.source === "dataset" ? exercise.id : null;
+  return exercise.source === "dataset" || exercise.source === "repdb" ? exercise.id : null;
 }
 
 /**
@@ -178,14 +233,33 @@ export async function stepsFor(exerciseOrId, lang = "en", base = "") {
   const exerciseId =
     typeof exerciseOrId === "string" ? exerciseOrId : (stepsKey(exerciseOrId) ?? exerciseOrId?.id);
   const raw = rawDatasetId(exerciseId);
-  const requested = await loadSteps(lang, base);
+  const provider =
+    (typeof exerciseOrId === "object" && exerciseOrId?.source === "repdb") ||
+    String(exerciseId ?? "").startsWith("repdb-")
+      ? "repdb"
+      : "dataset";
+
+  // Language availability is source-specific. Do not issue a known-404 request
+  // for German on the original source (or French on RepDB) just to discover
+  // that English is the appropriate fallback.
+  if (lang !== "en" && !SOURCE_LANGUAGES[provider].includes(lang)) {
+    const fallback = await loadSteps("en", base, provider);
+    const enSteps = fallback?.[raw];
+    return {
+      steps: Array.isArray(enSteps) ? enSteps : [],
+      language: "en",
+      fellBack: true,
+    };
+  }
+
+  const requested = await loadSteps(lang, base, provider);
   const steps = requested?.[raw];
   if (Array.isArray(steps) && steps.length > 0) {
     return { steps, language: lang, fellBack: false };
   }
   if (lang === "en") return { steps: [], language: "en", fellBack: false };
 
-  const fallback = await loadSteps("en", base);
+  const fallback = await loadSteps("en", base, provider);
   const enSteps = fallback?.[raw];
   if (Array.isArray(enSteps) && enSteps.length > 0) {
     return { steps: enSteps, language: "en", fellBack: true };
@@ -205,6 +279,7 @@ export async function stepsFor(exerciseOrId, lang = "en", base = "") {
 export const LANGUAGE_NAMES = {
   en: { label: "English", native: "English" },
   es: { label: "Spanish", native: "Español" },
+  de: { label: "German", native: "Deutsch" },
   fr: { label: "French", native: "Français" },
   it: { label: "Italian", native: "Italiano" },
   pl: { label: "Polish", native: "Polski" },
